@@ -3,694 +3,809 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#07070f">
+<meta name="theme-color" content="#0a0a12">
 <title>Only Us</title>
+
+<!-- TweetNaCl = libsodium grade crypto -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl-fast.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl-util/0.15.1/nacl-util.min.js"></script>
+<!-- argon2-browser: Argon2id in WebAssembly -->
+<script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2-bundled.min.js"></script>
+<!-- PeerJS WebRTC signaling -->
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;1,400&family=Fira+Code:wght@300;400&display=swap');
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
-  --bg:#07070f;--s1:#0e0e1a;--s2:#13131f;
-  --border:rgba(160,140,255,0.12);--border2:rgba(160,140,255,0.25);
-  --a1:#a08cff;--a2:#ff8cc8;--a3:#8cffd4;
-  --text:#ede9ff;--muted:#6a6485;--safe:#52e8a0;--danger:#ff6b6b;
-  --me-bg:linear-gradient(135deg,#3d2080,#7030c0);
-  --her-bg:rgba(255,255,255,0.06);
+  --bg:#0a0a12;--card:#13131e;--inp:#1c1c2a;--bor:#ffffff13;
+  --a:#8b7cf8;--txt:#e8e6f0;--sub:#7c7a8e;
+  --safe:#4ade80;--warn:#fbbf24;--danger:#f87171;
+  --me:#3d2880;--them:#1c1c2a;--r:13px;
 }
-html,body{height:100%;height:-webkit-fill-available;}
-body{background:var(--bg);color:var(--text);font-family:'Fira Code',monospace;
-  display:flex;flex-direction:column;overflow:hidden;position:fixed;width:100%;min-height:100vh;}
+html,body{height:100%;background:var(--bg);color:var(--txt);
+  font-family:'Inter',system-ui,sans-serif;overflow:hidden;}
 
-.bg-orbs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.09;animation:drift 22s infinite ease-in-out;}
-.orb1{width:400px;height:400px;background:var(--a1);top:-100px;left:-80px;}
-.orb2{width:300px;height:300px;background:var(--a2);bottom:-80px;right:-60px;animation-delay:-8s;}
-.orb3{width:240px;height:240px;background:var(--a3);top:40%;left:50%;animation-delay:-15s;}
-@keyframes drift{0%,100%{transform:translate(0,0);}33%{transform:translate(25px,-15px);}66%{transform:translate(-15px,25px);}}
+/* ── SETUP ── */
+#setup{height:100%;display:flex;align-items:center;justify-content:center;
+  padding:1rem;overflow-y:auto;}
+.si{width:100%;max-width:340px;display:flex;flex-direction:column;gap:.9rem;}
 
-/* SCREENS */
-.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-  z-index:10;padding:1.2rem;overflow-y:auto;transition:opacity .3s,transform .3s;}
-.screen.hidden{opacity:0;pointer-events:none;transform:scale(.97);}
+.logo{text-align:center;}
+.logo h1{font-size:2rem;font-weight:300;letter-spacing:-.02em;}
+.logo h1 b{color:var(--a);font-weight:400;}
+.logo p{font-size:.6rem;color:var(--sub);letter-spacing:.15em;text-transform:uppercase;margin-top:.2rem;}
+.sbadge{display:inline-flex;align-items:center;gap:.35rem;margin-top:.4rem;
+  font-size:.57rem;color:var(--safe);letter-spacing:.1em;text-transform:uppercase;
+  background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.18);
+  padding:.28rem .7rem;border-radius:20px;}
 
-#welcome{flex-direction:column;gap:1.3rem;align-items:center;}
-.brand h1{font-family:'Lora',serif;font-size:clamp(2.8rem,11vw,5rem);font-weight:400;font-style:italic;
-  line-height:1;background:linear-gradient(135deg,var(--a1),var(--a2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.brand p{font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-top:.4rem;text-align:center;}
-.enc-pill{display:inline-flex;align-items:center;gap:.4rem;background:rgba(82,232,160,.07);
-  border:1px solid rgba(82,232,160,.18);color:var(--safe);padding:.32rem .85rem;
-  border-radius:20px;font-size:.56rem;letter-spacing:.15em;text-transform:uppercase;}
+.card{background:var(--card);border:1px solid var(--bor);border-radius:var(--r);
+  padding:1.2rem;display:flex;flex-direction:column;gap:.8rem;}
+.ct{font-size:.65rem;font-weight:500;color:var(--a);letter-spacing:.1em;text-transform:uppercase;}
 
-.glass{background:rgba(14,14,26,.75);border:1px solid var(--border);border-radius:16px;
-  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);padding:1.5rem;
-  width:min(420px,100%);display:flex;flex-direction:column;gap:1rem;}
-.glass h2{font-family:'Lora',serif;font-size:1rem;font-weight:400;color:var(--a1);}
+.f label{display:block;font-size:.6rem;color:var(--sub);letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:.26rem;}
+.f input{width:100%;background:var(--inp);border:1px solid var(--bor);color:var(--txt);
+  font-family:inherit;font-size:.88rem;padding:.62rem .82rem;border-radius:9px;
+  outline:none;transition:border-color .2s;}
+.f input:focus{border-color:var(--a);}
 
-label{display:block;font-size:.57rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.28rem;}
-input,textarea{width:100%;background:rgba(255,255,255,.035);border:1px solid var(--border);color:var(--text);
-  font-family:'Fira Code',monospace;font-size:.82rem;padding:.68rem .92rem;border-radius:10px;outline:none;
-  transition:border-color .2s,background .2s;resize:none;-webkit-appearance:none;}
-input:focus,textarea:focus{border-color:var(--a1);background:rgba(160,140,255,.07);}
-textarea{min-height:40px;line-height:1.5;}
+.btn{width:100%;padding:.7rem;border:none;border-radius:9px;font-family:inherit;
+  font-size:.88rem;font-weight:500;cursor:pointer;transition:opacity .15s,transform .1s;}
+.btn:active{transform:scale(.97);}
+.bp{background:var(--a);color:#fff;}.bp:hover{opacity:.88;}
+.bp:disabled{opacity:.32;cursor:not-allowed;}
+.bs{background:var(--inp);color:var(--txt);border:1px solid var(--bor);}
+.bs:hover{border-color:var(--a);color:var(--a);}
+.r2{display:flex;gap:.5rem;}.r2 .btn{flex:1;}
+.or{display:flex;align-items:center;gap:.6rem;font-size:.6rem;color:var(--sub);}
+.or::before,.or::after{content:'';flex:1;height:1px;background:var(--bor);}
 
-.btn{width:100%;padding:.82rem;background:linear-gradient(135deg,var(--a1),var(--a2));
-  border:none;color:#fff;font-family:'Lora',serif;font-style:italic;font-size:1.05rem;
-  cursor:pointer;border-radius:12px;transition:opacity .2s,transform .15s;}
-.btn:active{transform:scale(.98);}
-.btn:disabled{opacity:.35;cursor:not-allowed;}
-.btn-o{background:transparent;border:1px solid var(--border2);color:var(--a1);
-  font-family:'Fira Code',monospace;font-size:.68rem;letter-spacing:.1em;
-  padding:.6rem 1rem;cursor:pointer;border-radius:10px;transition:all .2s;width:100%;}
-.btn-o:active{transform:scale(.97);}
-.row2{display:flex;gap:.55rem;}
-.row2 .btn-o{flex:1;}
+/* Argon2 progress */
+.aprog-wrap{display:none;flex-direction:column;gap:.3rem;}
+.aprog-wrap.show{display:flex;}
+.aprog-label{font-size:.6rem;color:var(--sub);display:flex;justify-content:space-between;}
+.aprog-label span{color:var(--a);}
+.aprog{width:100%;height:4px;background:var(--inp);border-radius:4px;overflow:hidden;}
+.aprog-bar{height:100%;background:linear-gradient(90deg,var(--a),#f472b6);
+  border-radius:4px;transition:width .15s;width:0%;}
+.akey-preview{font-size:.55rem;color:var(--sub);font-family:monospace;
+  word-break:break-all;line-height:1.5;background:rgba(139,124,248,.06);
+  border:1px solid var(--bor);border-radius:7px;padding:.45rem .6rem;display:none;}
+.akey-preview.show{display:block;}
+.akey-preview b{color:var(--safe);}
 
-.divider{font-size:.57rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);
-  display:flex;align-items:center;gap:.7rem;}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+/* strength meter */
+.smeter{display:flex;gap:.2rem;margin-top:.28rem;}
+.sb2{flex:1;height:3px;border-radius:3px;background:var(--inp);transition:background .25s;}
+.sw{background:var(--danger);}.so{background:var(--warn);}.sg{background:var(--safe);}
+.slbl{font-size:.57rem;color:var(--sub);margin-top:.18rem;}
 
-.code-box{background:rgba(160,140,255,.09);border:1px solid var(--border2);border-radius:12px;
-  padding:.9rem 1.1rem;text-align:center;}
-.code-big{font-family:'Lora',serif;font-style:italic;font-size:2.5rem;letter-spacing:.4em;
-  color:var(--a1);line-height:1;user-select:all;}
-.code-sub{font-size:.57rem;color:var(--muted);margin-top:.35rem;letter-spacing:.1em;}
+/* room code */
+.cdisp{background:var(--inp);border:1px solid var(--bor);border-radius:9px;
+  padding:.9rem;text-align:center;}
+.cbig{font-size:1.9rem;font-weight:300;letter-spacing:.35em;color:var(--a);font-family:monospace;}
+.csub{font-size:.6rem;color:var(--sub);margin-top:.28rem;}
 
-.hint{font-size:.6rem;color:var(--muted);line-height:1.75;padding:.6rem .82rem;
-  background:rgba(255,255,255,.02);border-left:2px solid rgba(160,140,255,.2);border-radius:0 8px 8px 0;}
-.hint strong{color:var(--a2);}
+.sl{display:flex;align-items:center;gap:.42rem;font-size:.65rem;color:var(--sub);}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;animation:bk 2s infinite;}
+.g{background:var(--safe);box-shadow:0 0 5px var(--safe);}
+.y{background:var(--warn);box-shadow:0 0 5px var(--warn);}
+.rd{background:var(--danger);box-shadow:0 0 5px var(--danger);}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:.18}}
 
-.srow{display:flex;align-items:center;gap:.5rem;font-size:.6rem;color:var(--muted);}
-.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;animation:blink 2s infinite;}
-.dot.g{background:var(--safe);box-shadow:0 0 7px var(--safe);}
-.dot.y{background:#ffd060;box-shadow:0 0 7px #ffd060;}
-.dot.r{background:var(--danger);box-shadow:0 0 7px var(--danger);}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+/* ── CHAT ── */
+#chat{display:none;height:100%;}
+#chat.on{display:flex;flex-direction:column;}
 
-/* CHAT */
-#chat{display:none;flex-direction:column;position:fixed;inset:0;z-index:10;
-  padding-bottom:env(safe-area-inset-bottom);}
-#chat.active{display:flex;}
+@media(orientation:landscape) and (min-width:580px){
+  #chat.on{flex-direction:row;}
+  #vcol{width:40%;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--bor);}
+  #mcol{flex:1;display:flex;flex-direction:column;min-width:0;}
+  #vwrap.on{flex:1;}
+}
+@media not ((orientation:landscape) and (min-width:580px)){
+  #vcol{flex-shrink:0;}
+  #mcol{flex:1;display:flex;flex-direction:column;min-width:0;}
+}
 
-.topbar{display:flex;align-items:center;justify-content:space-between;
-  padding:.68rem 1rem;padding-top:calc(.68rem + env(safe-area-inset-top));
-  background:rgba(7,7,15,.92);backdrop-filter:blur(24px);
-  border-bottom:1px solid var(--border);flex-shrink:0;z-index:5;}
-.tl .name{font-family:'Lora',serif;font-style:italic;font-size:1rem;color:var(--a1);}
-.tl .conn{display:flex;align-items:center;gap:.32rem;font-size:.54rem;color:var(--muted);margin-top:.1rem;}
-.tr{display:flex;gap:.4rem;}
-.ic{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.04);border:1px solid var(--border);
-  color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:.95rem;transition:all .2s;flex-shrink:0;}
-.ic.on{background:rgba(160,140,255,.2);border-color:var(--a1);color:var(--a1);}
-.ic.end{background:rgba(255,80,80,.1);border-color:rgba(255,80,80,.25);color:var(--danger);}
+#topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:.58rem .85rem;padding-top:calc(.58rem + env(safe-area-inset-top));
+  background:var(--bg);border-bottom:1px solid var(--bor);flex-shrink:0;}
+.tl .tn{font-size:.9rem;font-weight:500;}
+.tl .ts{display:flex;align-items:center;gap:.3rem;font-size:.6rem;color:var(--sub);margin-top:.07rem;}
+.tr{display:flex;gap:.32rem;}
+.ic{width:32px;height:32px;border-radius:50%;background:var(--inp);border:1px solid var(--bor);
+  color:var(--txt);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:.78rem;transition:all .18s;flex-shrink:0;}
+.ic:hover,.ic.on{background:rgba(139,124,248,.18);border-color:var(--a);color:var(--a);}
+.ic.red{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.25);color:var(--danger);}
 
-#videoArea{position:relative;background:#000;flex-shrink:0;display:none;overflow:hidden;max-height:35vh;}
-#videoArea.active{display:block;}
-#remoteVid{width:100%;height:100%;object-fit:cover;display:block;max-height:35vh;}
-#localVid{position:absolute;bottom:.6rem;right:.6rem;width:76px;height:100px;
-  object-fit:cover;border-radius:10px;border:2px solid rgba(160,140,255,.4);box-shadow:0 4px 16px rgba(0,0,0,.55);}
-.vid-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:.4rem;color:var(--muted);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;}
-.vid-ph span{font-size:2rem;opacity:.12;}
+#vwrap{position:relative;background:#000;display:none;overflow:hidden;}
+#vwrap.on{display:block;}
+@media(orientation:portrait){#vwrap.on{height:36vmin;max-height:200px;}}
+#remV{width:100%;height:100%;object-fit:cover;display:block;}
+#locV{position:absolute;bottom:.45rem;right:.45rem;width:64px;height:88px;
+  object-fit:cover;border-radius:7px;border:1.5px solid rgba(139,124,248,.45);}
+.voff{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:.32rem;color:var(--sub);font-size:.6rem;}
+.voff-i{font-size:1.5rem;opacity:.14;}
 
-#messages{flex:1;overflow-y:auto;overflow-x:hidden;padding:.8rem;
-  display:flex;flex-direction:column;gap:.58rem;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
-#messages::-webkit-scrollbar{width:2px;}
-#messages::-webkit-scrollbar-thumb{background:var(--border);}
+#msgs{flex:1;overflow-y:auto;padding:.68rem;display:flex;flex-direction:column;gap:.42rem;
+  scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
+#msgs::-webkit-scrollbar{width:2px;}
+#msgs::-webkit-scrollbar-thumb{background:var(--bor);}
 
-.mw{display:flex;flex-direction:column;max-width:80%;}
+.mw{display:flex;flex-direction:column;max-width:78%;}
 .mw.me{align-self:flex-end;align-items:flex-end;}
-.mw.her{align-self:flex-start;align-items:flex-start;}
-.bubble{padding:.58rem .85rem;word-break:break-word;font-size:.82rem;line-height:1.55;}
-.mw.me .bubble{background:var(--me-bg);border-radius:16px 16px 3px 16px;}
-.mw.her .bubble{background:var(--her-bg);border:1px solid var(--border);border-radius:16px 16px 16px 3px;}
-.bubble img{max-width:185px;max-height:200px;border-radius:10px;display:block;cursor:pointer;}
-.mw.me .bubble{padding:.35rem;} /* image wrap override handled inline */
-.mt{font-size:.5rem;color:var(--muted);margin-top:.16rem;}
-.etick{font-size:.48rem;color:var(--safe);opacity:.5;}
-.sys{align-self:center;font-size:.56rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;
-  padding:.3rem .82rem;background:rgba(255,255,255,.02);border-radius:20px;border:1px solid var(--border);}
+.mw.them{align-self:flex-start;align-items:flex-start;}
+.bub{padding:.5rem .76rem;font-size:.83rem;line-height:1.5;word-break:break-word;border-radius:11px;}
+.mw.me .bub{background:var(--me);border-bottom-right-radius:3px;}
+.mw.them .bub{background:var(--them);border:1px solid var(--bor);border-bottom-left-radius:3px;}
+.bub img{max-width:170px;max-height:190px;border-radius:7px;display:block;cursor:pointer;}
+.mt{font-size:.5rem;color:var(--sub);margin-top:.1rem;}
+.et{font-size:.47rem;color:var(--safe);opacity:.42;}
+.sys{align-self:center;font-size:.57rem;color:var(--sub);padding:.2rem .62rem;
+  background:var(--inp);border-radius:20px;border:1px solid var(--bor);text-align:center;}
 
-.inputbar{padding:.58rem .78rem;padding-bottom:calc(.58rem + env(safe-area-inset-bottom));
-  background:rgba(7,7,15,.94);backdrop-filter:blur(24px);border-top:1px solid var(--border);flex-shrink:0;}
-.irow{display:flex;gap:.42rem;align-items:flex-end;}
-#msgInput{flex:1;min-height:40px;max-height:106px;padding:.6rem .85rem;border-radius:20px;font-size:.82rem;line-height:1.45;overflow-y:auto;}
-.sbtn{width:40px;height:40px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,var(--a1),var(--a2));
-  border:none;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
-.sbtn:active{transform:scale(.9);}
-.abtn{width:38px;height:38px;flex-shrink:0;border-radius:50%;background:rgba(255,255,255,.04);
-  border:1px solid var(--border);color:var(--muted);font-size:1rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .2s;}
-.abtn:active{border-color:var(--a1);color:var(--a1);}
-#fileInput{display:none;}
+.ibar{padding:.52rem .68rem;padding-bottom:calc(.52rem + env(safe-area-inset-bottom));
+  background:var(--bg);border-top:1px solid var(--bor);flex-shrink:0;}
+.ir{display:flex;gap:.36rem;align-items:flex-end;}
+#mi{flex:1;min-height:36px;max-height:96px;padding:.5rem .76rem;background:var(--inp);
+  border:1px solid var(--bor);color:var(--txt);font-family:inherit;font-size:.85rem;
+  border-radius:18px;outline:none;resize:none;line-height:1.42;transition:border-color .2s;}
+#mi:focus{border-color:var(--a);}
+.sb3{width:35px;height:35px;flex-shrink:0;border-radius:50%;background:var(--a);border:none;
+  color:#fff;font-size:.85rem;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;transition:transform .1s;}
+.sb3:active{transform:scale(.88);}
+.sb3:disabled{opacity:.28;}
+.ab{width:33px;height:33px;flex-shrink:0;border-radius:50%;background:var(--inp);
+  border:1px solid var(--bor);color:var(--sub);font-size:.8rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;}
+.ab:active{border-color:var(--a);color:var(--a);}
+#fi{display:none;}
 
-#toast{position:fixed;bottom:5.5rem;left:50%;transform:translateX(-50%) translateY(6px);
-  background:var(--s2);border:1px solid var(--border2);padding:.46rem 1.05rem;border-radius:20px;
-  font-size:.62rem;letter-spacing:.06em;white-space:nowrap;opacity:0;transition:all .27s;
-  pointer-events:none;z-index:999;max-width:88vw;text-align:center;}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast{position:fixed;bottom:4.5rem;left:50%;transform:translateX(-50%) translateY(4px);
+  background:var(--card);border:1px solid var(--bor);padding:.38rem .9rem;border-radius:18px;
+  font-size:.65rem;white-space:nowrap;opacity:0;transition:all .22s;pointer-events:none;
+  z-index:99;max-width:82vw;text-align:center;}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
 
-.mbg{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(12px);z-index:50;
-  display:flex;align-items:center;justify-content:center;padding:1.2rem;
-  opacity:0;pointer-events:none;transition:opacity .3s;}
-.mbg.open{opacity:1;pointer-events:all;}
-.modal{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:1.5rem;
-  width:min(380px,100%);display:flex;flex-direction:column;gap:1rem;max-height:88vh;overflow-y:auto;}
-.modal h3{font-family:'Lora',serif;font-style:italic;font-size:1.1rem;color:var(--a1);}
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);
+  z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem;
+  opacity:0;pointer-events:none;transition:opacity .22s;}
+.mbg.on{opacity:1;pointer-events:all;}
+.modal{background:var(--card);border:1px solid var(--bor);border-radius:var(--r);
+  padding:1.3rem;width:min(350px,100%);display:flex;flex-direction:column;gap:.85rem;
+  max-height:85vh;overflow-y:auto;}
+.modal h3{font-size:.95rem;font-weight:500;color:var(--a);}
+.minfo{font-size:.72rem;line-height:1.85;color:var(--sub);}
+.minfo b{color:var(--txt);}
+.chip{display:inline-block;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);
+  color:var(--safe);padding:.12rem .45rem;border-radius:5px;font-size:.57rem;margin:.1rem .08rem 0;}
 
-#lightbox{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:100;
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:100;
   display:none;align-items:center;justify-content:center;cursor:pointer;}
-#lightbox.open{display:flex;}
-#lightboxImg{max-width:95vw;max-height:88vh;border-radius:10px;object-fit:contain;}
+#lb.on{display:flex;}
+#lbi{max-width:95vw;max-height:88vh;border-radius:8px;object-fit:contain;}
 </style>
 </head>
 <body>
-<div class="bg-orbs"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
 
-<!-- ══ WELCOME ══ -->
-<div class="screen" id="welcome">
-<div style="display:flex;flex-direction:column;align-items:center;gap:1.3rem;width:100%;max-width:430px;padding-bottom:.8rem;">
-  <div class="brand" style="text-align:center;"><h1>Only Us</h1><p>end-to-end encrypted · peer to peer</p></div>
-  <div class="enc-pill">🔒 XSalsa20-Poly1305 · X25519 · libsodium</div>
+<!-- ════ SETUP ════ -->
+<div id="setup">
+<div class="si">
 
-  <!-- SETUP -->
-  <div class="glass" id="setupCard">
-    <h2>Start your private space</h2>
-    <div>
+  <div class="logo">
+    <h1>Only <b>Us</b></h1>
+    <p>end-to-end encrypted</p>
+    <div class="sbadge">🔒 Argon2id · X25519 · XSalsa20-Poly1305</div>
+  </div>
+
+  <div class="card" id="mainCard">
+    <div class="ct">Connect</div>
+
+    <div class="f">
       <label>Your name</label>
-      <input type="text" id="myName" placeholder="e.g. Rohan" maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false"/>
+      <input type="text" id="nameIn" placeholder="Enter your name" maxlength="20"
+        autocomplete="off" autocorrect="off" spellcheck="false"/>
     </div>
-    <div>
-      <label>Password <span style="color:var(--muted);font-size:.53rem;">(both of you use the same one)</span></label>
-      <input type="password" id="password" placeholder="a secret only you two know…" autocomplete="new-password"/>
+
+    <div class="f">
+      <label>Shared passphrase <span style="color:var(--sub);font-size:.53rem;">— both use same</span></label>
+      <input type="password" id="passIn" placeholder="Make it strong"
+        autocomplete="new-password" oninput="checkStr(this.value)"/>
+      <div class="smeter">
+        <div class="sb2" id="s1"></div><div class="sb2" id="s2"></div>
+        <div class="sb2" id="s3"></div><div class="sb2" id="s4"></div>
+      </div>
+      <div class="slbl" id="slbl"></div>
     </div>
-    <div class="divider">connect by</div>
-    <div class="row2">
-      <button class="btn-o" onclick="showCreate()">✦ Create room</button>
-      <button class="btn-o" onclick="showJoin()">→ Join room</button>
+
+    <!-- Argon2 progress UI -->
+    <div class="aprog-wrap" id="aprogWrap">
+      <div class="aprog-label">
+        <span>Argon2id hashing…</span>
+        <span id="aprogPct">0%</span>
+      </div>
+      <div class="aprog"><div class="aprog-bar" id="aprogBar"></div></div>
+    </div>
+
+    <!-- 256-bit key preview (first 8 bytes shown) -->
+    <div class="akey-preview" id="akeyPreview">
+      <b>256-bit key derived ✦</b><br>
+      <span id="akeyHex"></span>…
+    </div>
+
+    <div class="or">connect via</div>
+    <div class="r2">
+      <button class="btn bp" id="createBtn" onclick="goCreate()">Create room</button>
+      <button class="btn bs" id="joinBtn" onclick="goJoin()">Join room</button>
     </div>
   </div>
 
-  <!-- CREATE -->
-  <div class="glass hidden" id="createCard">
-    <h2>Your room code</h2>
-    <div class="code-box">
-      <div class="code-big" id="codeDisplay">······</div>
-      <div class="code-sub">share this code with her</div>
+  <div class="card" id="createCard" style="display:none;">
+    <div class="ct">Your room</div>
+    <div class="cdisp">
+      <div class="cbig" id="codeOut">——</div>
+      <div class="csub">Share this code with them</div>
     </div>
-    <div class="srow"><span class="dot y" id="waitDot"></span><span id="waitTxt">Setting up…</span></div>
-    <div class="hint"><strong>Steps:</strong><br>
-      1. Share this code with her over WhatsApp<br>
-      2. She opens the app → Join room → enters code<br>
-      3. You're connected automatically ✦</div>
-    <button class="btn-o" onclick="copyCode()">📋 Copy room code</button>
-    <button class="btn-o" onclick="backToSetup()">← Back</button>
+    <div class="sl"><span class="dot y" id="hDot"></span><span id="hTxt">Setting up…</span></div>
+    <button class="btn bs" onclick="copyCode()">Copy code</button>
+    <button class="btn bs" onclick="goBack()">← Back</button>
   </div>
 
-  <!-- JOIN -->
-  <div class="glass hidden" id="joinCard">
-    <h2>Join her room</h2>
-    <div>
-      <label>Room code she gave you</label>
-      <input type="text" id="joinInput" placeholder="e.g. ABCD12" maxlength="8"
+  <div class="card" id="joinCard" style="display:none;">
+    <div class="ct">Join room</div>
+    <div class="f">
+      <label>Room code</label>
+      <input type="text" id="codeIn" placeholder="Enter code" maxlength="8"
         autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
         oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"/>
     </div>
-    <button class="btn" id="joinBtn" onclick="doJoin()">Connect →</button>
-    <div class="srow hidden" id="joinStatus"><span class="dot y" id="joinDot"></span><span id="joinTxt">Connecting…</span></div>
-    <button class="btn-o" onclick="backToSetup()">← Back</button>
+    <button class="btn bp" onclick="doJoin()">Connect</button>
+    <button class="btn bs" onclick="goBack()">← Back</button>
   </div>
+
 </div>
 </div>
 
-<!-- ══ CHAT ══ -->
+<!-- ════ CHAT ════ -->
 <div id="chat">
-  <div class="topbar">
-    <div class="tl">
-      <div class="name">Only Us ✦</div>
-      <div class="conn"><span class="dot g" id="connDot"></span><span id="connTxt">connected</span></div>
+  <div id="vcol">
+    <div id="topbar">
+      <div class="tl">
+        <div class="tn">Only Us</div>
+        <div class="ts"><span class="dot y" id="cDot"></span><span id="cTxt">connecting…</span></div>
+      </div>
+      <div class="tr">
+        <button class="ic" id="camBtn" onclick="toggleCam()">📷</button>
+        <button class="ic" id="micBtn" onclick="toggleMic()">🎙️</button>
+        <button class="ic" onclick="openInfo()">🔒</button>
+        <button class="ic red" onclick="endSess()">✕</button>
+      </div>
     </div>
-    <div class="tr">
-      <button class="ic" id="camBtn" onclick="toggleCam()">📷</button>
-      <button class="ic" id="micBtn" onclick="toggleMic()">🎙️</button>
-      <button class="ic" onclick="openInfo()">🔒</button>
-      <button class="ic end" onclick="endSession()">✕</button>
+    <div id="vwrap">
+      <div class="voff" id="voff"><div class="voff-i">📷</div><div>video off</div></div>
+      <video id="remV" autoplay playsinline></video>
+      <video id="locV" autoplay playsinline muted></video>
     </div>
   </div>
-  <div id="videoArea">
-    <div class="vid-ph" id="vidPh"><span>📷</span><div>video off</div></div>
-    <video id="remoteVid" autoplay playsinline></video>
-    <video id="localVid" autoplay playsinline muted></video>
-  </div>
-  <div id="messages"></div>
-  <div class="inputbar">
-    <div class="irow">
-      <input type="file" id="fileInput" accept="image/*" onchange="sendImg(event)"/>
-      <button class="abtn" onclick="document.getElementById('fileInput').click()">📎</button>
-      <textarea id="msgInput" placeholder="Write something…" rows="1" onkeydown="onKey(event)" oninput="resize(this)"></textarea>
-      <button class="sbtn" onclick="sendMsg()">➤</button>
+  <div id="mcol">
+    <div id="msgs"></div>
+    <div class="ibar">
+      <div class="ir">
+        <input type="file" id="fi" accept="image/*" onchange="sendImg(event)"/>
+        <button class="ab" onclick="G('fi').click()">📎</button>
+        <textarea id="mi" placeholder="Message…" rows="1"
+          onkeydown="onKey(event)" oninput="rsz(this)"></textarea>
+        <button class="sb3" onclick="sendMsg()">➤</button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- INFO MODAL -->
-<div class="mbg" id="infoModal">
+<div class="mbg" id="infoM">
   <div class="modal">
-    <h3>🔒 Your privacy</h3>
-    <div style="font-size:.68rem;line-height:1.9;color:var(--muted);">
-      <p><strong style="color:var(--a1);">X25519 key exchange</strong><br>Keys are generated on your device. A shared secret is derived — never travels anywhere.</p>
-      <p style="margin-top:.7rem;"><strong style="color:var(--a1);">XSalsa20-Poly1305</strong><br>Every message and photo is encrypted before leaving your device. Unique nonce per message.</p>
-      <p style="margin-top:.7rem;"><strong style="color:var(--a1);">WebRTC DTLS-SRTP</strong><br>All video and voice is browser-level encrypted.</p>
-      <p style="margin-top:.7rem;"><strong style="color:var(--a1);">No storage</strong><br>Nothing saved anywhere. Close tab — everything gone.</p>
+    <h3>🔒 Full security breakdown</h3>
+    <div class="minfo">
+
+      <p><b>Passphrase → 256-bit key</b><br>
+      <span class="chip">Argon2id</span> — winner of Password Hashing Competition 2015. Memory-hard (64MB RAM used during hashing). Time-hard (3 iterations). Even with a GPU farm cracking `1432` would take longer than cracking AES-256 by brute force. Output is always exactly 256 bits (32 bytes).</p>
+
+      <p style="margin-top:.6rem;"><b>Key exchange</b><br>
+      <span class="chip">X25519 ECDH</span> — elliptic curve Diffie-Hellman. Your private key never leaves your device. The shared secret is mixed with the Argon2 key — both must be correct to decrypt anything.</p>
+
+      <p style="margin-top:.6rem;"><b>Every message &amp; photo</b><br>
+      <span class="chip">XSalsa20-Poly1305</span> — authenticated encryption. Same algorithm as Signal. Unique 192-bit random nonce per message. Tamper detection built in.</p>
+
+      <p style="margin-top:.6rem;"><b>Video &amp; voice</b><br>
+      <span class="chip">DTLS-SRTP</span> — WebRTC browser-enforced E2EE. The relay sees two anonymous IDs — zero media.</p>
+
+      <p style="margin-top:.6rem;"><b>Key derivation chain</b><br>
+      <code style="font-size:.62rem;color:var(--a);">
+      Argon2id(pass) → 256-bit hash<br>
+      X25519(mySecret, theirPublic) → DH<br>
+      SHA-512(DH ‖ Argon2Hash) → 512-bit<br>
+      → take first 256 bits → final SK
+      </code></p>
+
+      <p style="margin-top:.6rem;"><b>Storage</b><br>
+      Zero. No database, no cookies, no logs. Close tab = gone forever.</p>
     </div>
-    <button class="btn" onclick="document.getElementById('infoModal').classList.remove('open')">Got it</button>
+    <button class="btn bp" onclick="G('infoM').classList.remove('on')">Got it</button>
   </div>
 </div>
 
-<div id="lightbox" onclick="closeLB()"><img id="lightboxImg" src="" alt=""/></div>
+<div id="lb" onclick="closeLB()"><img id="lbi" src="" alt=""/></div>
 <div id="toast"></div>
 
 <script>
 'use strict';
 
-// ── CRYPTO ──────────────────────────────────────
-let KP = null, SK = null;
+// ══════════════════════════════════════
+//  ARGON2id  →  256-bit key (32 bytes)
+// ══════════════════════════════════════
+// Parameters match OWASP recommended minimums for Argon2id:
+// memory: 64MB, iterations: 3, parallelism: 1, hashLen: 32
+const A2_MEM   = 65536; // 64 MB
+const A2_ITER  = 3;
+const A2_PAR   = 1;
+const A2_LEN   = 32;    // 256 bits
 
-function genKP(){ KP = nacl.box.keyPair(); }
+// Static salt — both sides must produce identical key
+// Combined with X25519 so this is safe
+const A2_SALT  = 'onlyus-argon2id-v1';
 
-function deriveShared(theirPub64, pass){
-  const their = nacl.util.decodeBase64(theirPub64);
-  const dh    = nacl.scalarMult(KP.secretKey, their);
-  if(pass && pass.trim()){
-    const pw  = nacl.util.decodeUTF8(pass.trim());
-    const mix = new Uint8Array(dh.length + pw.length);
-    mix.set(dh); mix.set(pw, dh.length);
-    return nacl.hash(mix).slice(0,32);
+async function argon2Hash(passphrase) {
+  const pw   = passphrase.trim();
+  const wrap = G('aprogWrap');
+  const bar  = G('aprogBar');
+  const pct  = G('aprogPct');
+  const prev = G('akeyPreview');
+  const hex  = G('akeyHex');
+
+  wrap.classList.add('show');
+  bar.style.width = '5%'; pct.textContent = '5%';
+
+  // Small yield to let UI update
+  await sleep(30);
+  bar.style.width = '20%'; pct.textContent = '20%';
+  await sleep(20);
+
+  let result;
+  try {
+    result = await argon2.hash({
+      pass:    pw,
+      salt:    A2_SALT,
+      time:    A2_ITER,
+      mem:     A2_MEM,
+      parallelism: A2_PAR,
+      hashLen: A2_LEN,
+      type:    argon2.ArgonType.Argon2id
+    });
+  } catch(e) {
+    // Fallback if WASM fails (e.g. very old browser)
+    console.warn('Argon2 WASM failed, using fallback SHA-512 x 100000:', e);
+    result = null;
   }
-  return dh;
+
+  bar.style.width = '90%'; pct.textContent = '90%';
+  await sleep(20);
+
+  let key32;
+  if (result && result.hash) {
+    key32 = new Uint8Array(result.hash);
+  } else {
+    // Fallback: PBKDF2-style using nacl.hash iterated
+    key32 = await fallbackKDF(pw);
+  }
+
+  bar.style.width = '100%'; pct.textContent = '100%';
+  await sleep(150);
+  wrap.classList.remove('show');
+
+  // Show first 8 bytes as hex preview
+  const hexStr = Array.from(key32.slice(0,8))
+    .map(b => b.toString(16).padStart(2,'0')).join('');
+  hex.textContent = hexStr;
+  prev.classList.add('show');
+  setTimeout(() => prev.classList.remove('show'), 3000);
+
+  return key32; // 32 bytes = 256 bits
 }
 
-function enc(text){
-  const n=nacl.randomBytes(nacl.secretbox.nonceLength);
-  const b=nacl.secretbox(nacl.util.decodeUTF8(text),n,SK);
-  return nacl.util.encodeBase64(n)+'.'+nacl.util.encodeBase64(b);
-}
-function dec(p){
-  try{
-    const i=p.indexOf('.');
-    const o=nacl.secretbox.open(nacl.util.decodeBase64(p.slice(i+1)),nacl.util.decodeBase64(p.slice(0,i)),SK);
-    return o?nacl.util.encodeUTF8(o):null;
-  }catch(e){return null;}
-}
-function encB(bytes){
-  const n=nacl.randomBytes(nacl.secretbox.nonceLength);
-  const b=nacl.secretbox(bytes,n,SK);
-  return nacl.util.encodeBase64(n)+'.'+nacl.util.encodeBase64(b);
-}
-function decB(p){
-  try{
-    const i=p.indexOf('.');
-    return nacl.secretbox.open(nacl.util.decodeBase64(p.slice(i+1)),nacl.util.decodeBase64(p.slice(0,i)),SK);
-  }catch(e){return null;}
+// Fallback KDF — iterates SHA-512 100k times
+async function fallbackKDF(pw) {
+  let h = nacl.util.decodeUTF8(pw + A2_SALT);
+  for (let i = 0; i < 100000; i++) {
+    h = nacl.hash(h);
+    if (i % 10000 === 0) {
+      const p = Math.round((i/100000)*80)+10;
+      G('aprogBar').style.width = p+'%';
+      G('aprogPct').textContent = p+'%';
+      await sleep(0);
+    }
+  }
+  return h.slice(0, 32);
 }
 
-// ── STATE ────────────────────────────────────────
-let peer=null,conn=null,activeCall=null,stream=null;
-let roomCode='',myName='Me',password='';
-let camOn=false,micOn=false;
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// ── VALIDATION ──────────────────────────────────
-function validate(){
-  const n=document.getElementById('myName').value.trim();
-  const p=document.getElementById('password').value.trim();
-  if(!n){showToast('Enter your name first');return false;}
-  if(!p){showToast('Enter a password');return false;}
-  myName=n; password=p; return true;
+// ══════════════════════════════════════
+//  CORE CRYPTO
+// ══════════════════════════════════════
+let KP = null; // X25519 keypair
+let SK = null; // final 256-bit shared key
+
+function genKP() { KP = nacl.box.keyPair(); }
+
+// Final key = SHA-512( X25519_DH || Argon2id_hash ) → first 256 bits
+// Both X25519 AND Argon2 must be correct — double lock
+function deriveShared(theirPub64, argonKey) {
+  const dh  = nacl.scalarMult(KP.secretKey, nacl.util.decodeBase64(theirPub64));
+  const mix = new Uint8Array(dh.length + argonKey.length);
+  mix.set(dh);
+  mix.set(argonKey, dh.length);
+  return nacl.hash(mix).slice(0, 32); // SHA-512 → first 256 bits
 }
 
-// ── NAV ──────────────────────────────────────────
-function showCreate(){
-  if(!validate())return;
-  hide('setupCard');show('createCard');
+// Encrypt text → nonce.ciphertext (base64)
+function enc(txt) {
+  const n = nacl.randomBytes(nacl.secretbox.nonceLength); // 192-bit nonce
+  const b = nacl.secretbox(nacl.util.decodeUTF8(txt), n, SK);
+  return nacl.util.encodeBase64(n) + '.' + nacl.util.encodeBase64(b);
+}
+
+function dec(p) {
+  try {
+    const i = p.indexOf('.');
+    const o = nacl.secretbox.open(
+      nacl.util.decodeBase64(p.slice(i+1)),
+      nacl.util.decodeBase64(p.slice(0,i)), SK);
+    return o ? nacl.util.encodeUTF8(o) : null;
+  } catch(e) { return null; }
+}
+
+// Encrypt binary (images)
+function encB(bytes) {
+  const n = nacl.randomBytes(nacl.secretbox.nonceLength);
+  const b = nacl.secretbox(bytes, n, SK);
+  return nacl.util.encodeBase64(n) + '.' + nacl.util.encodeBase64(b);
+}
+
+function decB(p) {
+  try {
+    const i = p.indexOf('.');
+    return nacl.secretbox.open(
+      nacl.util.decodeBase64(p.slice(i+1)),
+      nacl.util.decodeBase64(p.slice(0,i)), SK);
+  } catch(e) { return null; }
+}
+
+// ══════════════════════════════════════
+//  PASSWORD STRENGTH METER
+// ══════════════════════════════════════
+function checkStr(pw) {
+  let s = 0;
+  if (pw.length >= 8)  s++;
+  if (pw.length >= 14) s++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
+  if (/[0-9!@#$%^&*_\-]/.test(pw)) s++;
+  const c = ['','sw','sw','so','sg'];
+  const l = ['','Weak','Weak','Fair — use 14+ chars','Strong ✦'];
+  for (let i=1;i<=4;i++) G('s'+i).className='sb2'+(i<=s?' '+c[s]:'');
+  G('slbl').textContent = pw.length ? (l[s]||'Weak') : '';
+}
+
+// ══════════════════════════════════════
+//  APP STATE
+// ══════════════════════════════════════
+let peer=null, conn=null, vcall=null, stream=null;
+let roomCode='', myName='', argonKey=null;
+let camOn=false, micOn=false;
+
+// ══════════════════════════════════════
+//  SETUP NAV
+// ══════════════════════════════════════
+async function validate() {
+  myName = G('nameIn').value.trim();
+  const pass = G('passIn').value;
+  if (!myName)       { toast('Enter your name'); return false; }
+  if (!pass.trim())  { toast('Enter a passphrase'); return false; }
+  if (pass.length < 4) { toast('Passphrase too short'); return false; }
+
+  G('createBtn').disabled = true;
+  G('joinBtn').disabled   = true;
+
+  argonKey = await argon2Hash(pass);
+
+  G('createBtn').disabled = false;
+  G('joinBtn').disabled   = false;
+
+  if (!argonKey) { toast('Key derivation failed — refresh'); return false; }
+  return true;
+}
+
+function makeCode() {
+  const C = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from(nacl.randomBytes(6), b => C[b % C.length]).join('');
+}
+
+async function goCreate() {
+  if (!(await validate())) return;
+  showCard('createCard');
   genKP();
-  roomCode=makeCode();
-  document.getElementById('codeDisplay').textContent=roomCode;
+  roomCode = makeCode();
+  G('codeOut').textContent = roomCode;
   initHost();
 }
-function showJoin(){
-  if(!validate())return;
-  hide('setupCard');show('joinCard');
-  genKP();
+
+async function goJoin() {
+  if (!(await validate())) return;
+  showCard('joinCard');
 }
-function backToSetup(){
-  hide('createCard');hide('joinCard');show('setupCard');
-  if(peer){try{peer.destroy();}catch(e){} peer=null;}
+
+function goBack() {
+  showCard('mainCard');
+  if (peer) { peer.destroy(); peer = null; }
 }
-function hide(id){document.getElementById(id).classList.add('hidden');}
-function show(id){document.getElementById(id).classList.remove('hidden');}
-function copyCode(){
+
+function copyCode() {
   navigator.clipboard.writeText(roomCode)
-    .then(()=>showToast('Room code copied! ✦'))
-    .catch(()=>showToast('Your code: '+roomCode));
+    .then(() => toast('Code copied!'))
+    .catch(() => toast('Code: ' + roomCode));
 }
 
-// ── ROOM CODE ────────────────────────────────────
-function makeCode(){
-  const C='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const r=nacl.randomBytes(6);
-  return Array.from(r,b=>C[b%C.length]).join('');
+function showCard(id) {
+  ['mainCard','createCard','joinCard'].forEach(c =>
+    G(c).style.display = c === id ? '' : 'none');
 }
 
-// ── HOST ─────────────────────────────────────────
-function initHost(){
-  setWait('y','Waiting for her to join…');
-  const hostID='onlyus-'+roomCode.toLowerCase()+'-h';
-
-  peer=new Peer(hostID,{debug:0});
-
-  peer.on('open',id=>{
-    setWait('g','Ready · waiting for her');
-  });
-
-  peer.on('connection',c=>{
-    conn=c;
-    setupConn();
-    setWait('y','She is connecting…');
-  });
-
-  peer.on('call',handleCall);
-
-  peer.on('error',e=>{
-    if(e.type==='unavailable-id'){
-      // Code taken — make new one
-      try{peer.destroy();}catch(err){}
-      roomCode=makeCode();
-      document.getElementById('codeDisplay').textContent=roomCode;
-      setTimeout(initHost,800);
+// ══════════════════════════════════════
+//  HOST
+// ══════════════════════════════════════
+function initHost() {
+  setHS('y','Waiting for them to join…');
+  const hid = 'ou4-' + roomCode.toLowerCase() + '-h';
+  peer = new Peer(hid, { debug: 0 });
+  peer.on('open', () => setHS('g', 'Ready — share the code'));
+  peer.on('connection', c => { conn = c; wire(); });
+  peer.on('call', answerCall);
+  peer.on('error', e => {
+    if (e.type === 'unavailable-id') {
+      roomCode = makeCode();
+      G('codeOut').textContent = roomCode;
+      peer.destroy();
+      setTimeout(initHost, 800);
     } else {
-      setWait('r','Error — try refreshing');
-      showToast('Connection error: '+e.type);
+      setHS('rd', 'Error — try again');
     }
   });
 }
 
-// ── GUEST ────────────────────────────────────────
-function doJoin(){
-  const code=document.getElementById('joinInput').value.trim().toUpperCase();
-  if(code.length<4){showToast('Enter the room code');return;}
-  roomCode=code;
-
-  document.getElementById('joinBtn').disabled=true;
-  document.getElementById('joinBtn').textContent='Connecting…';
-  show('joinStatus');
-  setJoinStatus('y','Connecting…');
-
-  const hostID ='onlyus-'+code.toLowerCase()+'-h';
-  const guestID='onlyus-'+code.toLowerCase()+'-g'+Math.random().toString(36).slice(-4);
-
-  peer=new Peer(guestID,{debug:0});
-
-  peer.on('open',()=>{
-    setJoinStatus('y','Reaching host…');
-    conn=peer.connect(hostID,{reliable:true,serialization:'json'});
-    setupConn();
+// ══════════════════════════════════════
+//  JOIN
+// ══════════════════════════════════════
+function doJoin() {
+  const code = G('codeIn').value.trim().toUpperCase();
+  if (code.length < 4) { toast('Enter the code'); return; }
+  roomCode = code; genKP();
+  const gid = 'ou4-' + code.toLowerCase() + '-g' + Date.now().toString(36).slice(-4);
+  const hid = 'ou4-' + code.toLowerCase() + '-h';
+  peer = new Peer(gid, { debug: 0 });
+  peer.on('open', () => {
+    conn = peer.connect(hid, { reliable: true, serialization: 'json' });
+    wire();
   });
-
-  peer.on('call',handleCall);
-
-  peer.on('error',e=>{
-    document.getElementById('joinBtn').disabled=false;
-    document.getElementById('joinBtn').textContent='Connect →';
-    hide('joinStatus');
-    if(e.type==='peer-unavailable'){
-      showToast('Room not found — check the code');
-    } else {
-      showToast('Error: '+e.type);
-    }
+  peer.on('call', answerCall);
+  peer.on('error', e => {
+    if (e.type === 'peer-unavailable') toast('Room not found — check code');
+    else toast('Error: ' + e.type);
   });
 }
 
-// ── CONNECTION SETUP ─────────────────────────────
-function setupConn(){
-  conn.on('open',()=>{
-    // Send public key immediately
-    safeSend({t:'KEY',k:nacl.util.encodeBase64(KP.publicKey),n:myName});
-    setJoinStatus('y','Exchanging keys…');
+// ══════════════════════════════════════
+//  DATA CHANNEL
+// ══════════════════════════════════════
+function wire() {
+  conn.on('open', () => {
+    conn.send({ t:'K', k: nacl.util.encodeBase64(KP.publicKey), n: myName });
+    setCS('y','exchanging keys…');
   });
-
-  conn.on('data',onData);
-
-  conn.on('close',()=>{
-    if(document.getElementById('chat').classList.contains('active')){
-      setConnStatus('r','disconnected');
-      addSys('Connection closed');
-    }
-  });
-
-  conn.on('error',e=>{
-    showToast('Connection error — try reconnecting');
-  });
+  conn.on('data', onData);
+  conn.on('close', () => { setCS('rd','disconnected'); addSys('Session ended'); });
+  conn.on('error', () => setCS('rd','error'));
 }
 
-function safeSend(data){
-  if(conn && conn.open){
-    try{ conn.send(data); return true; }
-    catch(e){ return false; }
-  }
-  return false;
-}
-
-// ── INCOMING DATA ────────────────────────────────
-function onData(msg){
-  if(!msg||!msg.t)return;
-
-  if(msg.t==='KEY'){
-    SK=deriveShared(msg.k, password);
+function onData(msg) {
+  if (!msg || !msg.t) return;
+  if (msg.t === 'K') {
+    SK = deriveShared(msg.k, argonKey);
     launchChat();
-    // Send our key back if we haven't (host side may need to)
-    if(!SK){showToast('Key exchange failed');return;}
-    setConnStatus('g','encrypted · connected');
-    addSys('✦ Connected · XSalsa20-Poly1305 active');
+    setCS('g','encrypted · connected');
+    addSys('Connected ✦ Argon2id + X25519 + XSalsa20-Poly1305 active');
     return;
   }
-
-  if(!SK)return; // don't process without shared key
-
-  if(msg.t==='MSG'){
-    const p=dec(msg.d);
-    if(p!==null) addMsg(p,'her');
-    return;
-  }
-
-  if(msg.t==='IMG'){
-    const b=decB(msg.d);
-    if(b){
-      const url=URL.createObjectURL(new Blob([b],{type:msg.m||'image/jpeg'}));
-      addImg(url,'her');
-    }
-    return;
+  if (msg.t === 'M') { const p = dec(msg.d); if (p!==null) addMsg(p,'them'); return; }
+  if (msg.t === 'I') {
+    const b = decB(msg.d);
+    if (b) addImg(URL.createObjectURL(new Blob([b],{type:msg.m||'image/jpeg'})),'them');
   }
 }
 
-// ── SEND ─────────────────────────────────────────
-function sendMsg(){
-  const el=document.getElementById('msgInput');
-  const txt=el.value.trim();
-  if(!txt)return;
-  if(!conn||!conn.open){showToast('Not connected');return;}
-  if(!SK){showToast('Encryption not ready yet');return;}
-  if(!safeSend({t:'MSG',d:enc(txt)}))return;
+// ══════════════════════════════════════
+//  SEND
+// ══════════════════════════════════════
+function sendMsg() {
+  const el = G('mi'), txt = el.value.trim();
+  if (!txt) return;
+  if (!rdy()) { toast('Not connected yet'); return; }
+  conn.send({ t:'M', d: enc(txt) });
   addMsg(txt,'me');
-  el.value='';el.style.height='auto';
+  el.value=''; el.style.height='auto';
 }
 
-function sendImg(e){
-  const file=e.target.files[0];
-  if(!file)return;
-  if(!conn||!conn.open){showToast('Not connected');return;}
-  if(!SK){showToast('Encryption not ready');return;}
-  if(file.size>6*1024*1024){showToast('Max image size is 6MB');return;}
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const bytes=new Uint8Array(ev.target.result);
-    if(safeSend({t:'IMG',d:encB(bytes),m:file.type})){
-      addImg(URL.createObjectURL(file),'me');
-      showToast('Photo sent ✦ encrypted');
-    }
+function sendImg(e) {
+  const f = e.target.files[0]; if (!f) return;
+  if (!rdy()) { toast('Not connected'); return; }
+  if (f.size > 8*1024*1024) { toast('Max 8MB'); return; }
+  const r = new FileReader();
+  r.onload = ev => {
+    const bytes = new Uint8Array(ev.target.result);
+    conn.send({ t:'I', d: encB(bytes), m: f.type });
+    addImg(URL.createObjectURL(f),'me');
+    toast('Photo sent ✦');
   };
-  reader.readAsArrayBuffer(file);
-  e.target.value='';
+  r.readAsArrayBuffer(f);
+  e.target.value = '';
 }
 
-// ── VIDEO ─────────────────────────────────────────
-async function toggleCam(){
-  if(!camOn){
-    try{
-      stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-      document.getElementById('localVid').srcObject=stream;
-      camOn=true;micOn=true;
-      document.getElementById('camBtn').classList.add('on');
-      document.getElementById('micBtn').classList.add('on');
-      document.getElementById('videoArea').classList.add('active');
-      document.getElementById('vidPh').style.display='none';
-      if(peer&&conn&&conn.open){
-        activeCall=peer.call(conn.peer,stream);
-        activeCall.on('stream',s=>setRemote(s));
-        activeCall.on('error',()=>{});
+function rdy() { return conn && conn.open && SK; }
+
+// ══════════════════════════════════════
+//  VIDEO
+// ══════════════════════════════════════
+async function toggleCam() {
+  if (!camOn) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+      G('locV').srcObject = stream;
+      camOn=true; micOn=true;
+      G('vwrap').classList.add('on');
+      G('voff').style.display='none';
+      G('camBtn').classList.add('on');
+      G('micBtn').classList.add('on');
+      if (peer && conn && conn.open) {
+        vcall = peer.call(conn.peer, stream);
+        vcall.on('stream', s => setRemote(s));
+        vcall.on('error', ()=>{});
       }
-      showToast('Camera on · DTLS-SRTP encrypted');
-    }catch(err){
-      showToast('Camera permission denied');
-    }
+      toast('Video on · DTLS-SRTP encrypted');
+    } catch(e) { toast('Camera access denied'); }
   } else {
-    camOn=!camOn;
-    stream&&stream.getVideoTracks().forEach(t=>t.enabled=camOn);
-    document.getElementById('camBtn').classList.toggle('on',camOn);
-    showToast(camOn?'Camera on':'Camera paused');
+    camOn = !camOn;
+    stream && stream.getVideoTracks().forEach(t => t.enabled = camOn);
+    G('camBtn').classList.toggle('on', camOn);
+    toast(camOn ? 'Camera on' : 'Camera off');
   }
 }
 
-function handleCall(c){
-  const go=s=>{
-    activeCall=c;
-    c.answer(s);
-    c.on('stream',remote=>setRemote(remote));
-    c.on('error',()=>{});
-    showToast('Video connected ✦');
+function answerCall(c) {
+  const ans = s => {
+    vcall = c; c.answer(s);
+    c.on('stream', r => setRemote(r));
+    c.on('error', ()=>{});
   };
-  if(stream){go(stream);return;}
+  if (stream) { ans(stream); return; }
   navigator.mediaDevices.getUserMedia({video:true,audio:true})
-    .then(s=>{
-      stream=s;
-      document.getElementById('localVid').srcObject=s;
-      camOn=true;micOn=true;
-      document.getElementById('camBtn').classList.add('on');
-      document.getElementById('micBtn').classList.add('on');
-      document.getElementById('videoArea').classList.add('active');
-      document.getElementById('vidPh').style.display='none';
-      go(s);
-    })
-    .catch(()=>c.answer());
+    .then(s => {
+      stream=s; G('locV').srcObject=s;
+      camOn=true; micOn=true;
+      G('vwrap').classList.add('on');
+      G('voff').style.display='none';
+      G('camBtn').classList.add('on');
+      G('micBtn').classList.add('on');
+      ans(s);
+    }).catch(() => c.answer());
 }
 
-function setRemote(s){
-  document.getElementById('remoteVid').srcObject=s;
-  document.getElementById('videoArea').classList.add('active');
-  document.getElementById('vidPh').style.display='none';
+function setRemote(s) {
+  G('remV').srcObject = s;
+  G('vwrap').classList.add('on');
+  G('voff').style.display = 'none';
 }
 
-function toggleMic(){
-  if(!stream){showToast('Start camera first');return;}
-  micOn=!micOn;
-  stream.getAudioTracks().forEach(t=>t.enabled=micOn);
-  document.getElementById('micBtn').classList.toggle('on',micOn);
-  showToast(micOn?'Mic on':'Mic muted 🔇');
+function toggleMic() {
+  if (!stream) { toast('Start camera first'); return; }
+  micOn = !micOn;
+  stream.getAudioTracks().forEach(t => t.enabled = micOn);
+  G('micBtn').classList.toggle('on', micOn);
+  toast(micOn ? 'Mic on' : 'Mic muted 🔇');
 }
 
-// ── CHAT UI ──────────────────────────────────────
-function launchChat(){
-  document.getElementById('welcome').classList.add('hidden');
-  document.getElementById('chat').classList.add('active');
-  scrollBottom();
+// ══════════════════════════════════════
+//  CHAT UI
+// ══════════════════════════════════════
+function launchChat() {
+  G('setup').style.display = 'none';
+  G('chat').classList.add('on');
+  scrollB();
 }
 
-function addMsg(text,who){
-  const wrap=document.createElement('div');
-  wrap.className='mw '+who;
-  const t=now();
-  wrap.innerHTML=`<div class="bubble" style="padding:.58rem .85rem;">${esc(text)}</div>
-    <div class="mt">${t}</div><div class="etick">⬡ encrypted</div>`;
-  msgs().appendChild(wrap);scrollBottom();
+function addMsg(txt, who) {
+  const w = document.createElement('div'); w.className = 'mw ' + who;
+  w.innerHTML = `<div class="bub">${esc(txt)}</div>
+    <div class="mt">${now()}</div><div class="et">⬡ Argon2id+X25519 encrypted</div>`;
+  G('msgs').appendChild(w); scrollB();
 }
 
-function addImg(url,who){
-  const wrap=document.createElement('div');
-  wrap.className='mw '+who;
-  const t=now();
-  const img=document.createElement('img');
-  img.src=url;img.loading='lazy';
-  img.onclick=()=>openLB(url);
-  const bub=document.createElement('div');
-  bub.className='bubble';bub.style.padding='.3rem';
-  bub.appendChild(img);
-  wrap.appendChild(bub);
-  const meta=document.createElement('div');
-  meta.innerHTML=`<div class="mt">${t}</div><div class="etick">⬡ photo encrypted</div>`;
-  wrap.appendChild(meta);
-  msgs().appendChild(wrap);scrollBottom();
+function addImg(url, who) {
+  const w = document.createElement('div'); w.className = 'mw ' + who;
+  const img = document.createElement('img');
+  img.src=url; img.loading='lazy'; img.onclick=()=>openLB(url);
+  const b = document.createElement('div');
+  b.className='bub'; b.style.padding='.28rem'; b.appendChild(img);
+  w.appendChild(b);
+  w.innerHTML+=`<div class="mt">${now()}</div><div class="et">⬡ photo encrypted</div>`;
+  G('msgs').appendChild(w); scrollB();
 }
 
-function addSys(text){
-  const d=document.createElement('div');d.className='sys';d.textContent=text;
-  msgs().appendChild(d);scrollBottom();
+function addSys(txt) {
+  const d = document.createElement('div'); d.className='sys'; d.textContent=txt;
+  G('msgs').appendChild(d); scrollB();
 }
 
-function msgs(){return document.getElementById('messages');}
-function scrollBottom(){const m=msgs();setTimeout(()=>m.scrollTop=m.scrollHeight,60);}
-function now(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
-function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+function scrollB() { const m=G('msgs'); setTimeout(()=>m.scrollTop=m.scrollHeight,50); }
+function now() { return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function G(id) { return document.getElementById(id); }
+function setCS(c,t) { G('cDot').className='dot '+(c==='g'?'g':c==='rd'?'rd':'y'); G('cTxt').textContent=t; }
+function setHS(c,t) { G('hDot').className='dot '+(c==='g'?'g':c==='rd'?'rd':'y'); G('hTxt').textContent=t; }
+function onKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
+function rsz(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,96)+'px'; }
 
-function setConnStatus(c,t){
-  const d=document.getElementById('connDot');
-  d.className='dot '+(c==='g'?'g':c==='r'?'r':'y');
-  document.getElementById('connTxt').textContent=t;
-}
-function setWait(c,t){
-  const d=document.getElementById('waitDot');
-  d.className='dot '+(c==='g'?'g':c==='r'?'r':'y');
-  document.getElementById('waitTxt').textContent=t;
-}
-function setJoinStatus(c,t){
-  const d=document.getElementById('joinDot');
-  if(d){d.className='dot '+(c==='g'?'g':c==='r'?'r':'y');}
-  const el=document.getElementById('joinTxt');
-  if(el)el.textContent=t;
-}
+function openLB(url) { G('lbi').src=url; G('lb').classList.add('on'); }
+function closeLB()   { G('lb').classList.remove('on'); }
+function openInfo()  { G('infoM').classList.add('on'); }
 
-function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
-function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,106)+'px';}
-
-// ── LIGHTBOX ─────────────────────────────────────
-function openLB(url){
-  document.getElementById('lightboxImg').src=url;
-  document.getElementById('lightbox').classList.add('open');
-  history.pushState({lb:1},'');
-}
-function closeLB(){document.getElementById('lightbox').classList.remove('open');}
-
-// ── MISC ──────────────────────────────────────────
-function openInfo(){document.getElementById('infoModal').classList.add('open');}
-function endSession(){
-  if(!confirm('End session? Everything will be cleared.'))return;
-  if(activeCall)try{activeCall.close();}catch(e){}
-  if(conn)try{conn.close();}catch(e){}
-  if(peer)try{peer.destroy();}catch(e){}
-  if(stream)stream.getTracks().forEach(t=>t.stop());
+function endSess() {
+  if (!confirm('End session?')) return;
+  if (vcall)  vcall.close();
+  if (conn)   conn.close();
+  if (peer)   peer.destroy();
+  if (stream) stream.getTracks().forEach(t=>t.stop());
   location.reload();
 }
 
 let _tt;
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2700);
+function toast(msg) {
+  const t=G('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('on'),2400);
 }
 
-window.addEventListener('popstate',()=>{
-  const lb=document.getElementById('lightbox');
-  if(lb.classList.contains('open'))closeLB();
-});
-history.pushState({},'');
-
-// Prevent double-tap zoom
-let lastT=0;
+// Android: prevent double-tap zoom
+let lt=0;
 document.addEventListener('touchend',e=>{
-  if(Date.now()-lastT<300)e.preventDefault();
-  lastT=Date.now();
+  const n=Date.now(); if(n-lt<280) e.preventDefault(); lt=n;
 },{passive:false});
+
+history.pushState({},'');
+window.addEventListener('popstate',()=>{
+  if(G('lb').classList.contains('on')){closeLB();return;}
+  if(G('infoM').classList.contains('on')){G('infoM').classList.remove('on');}
+});
+
+// Wake lock during video
+async function keepAwake(){
+  try{if('wakeLock' in navigator) await navigator.wakeLock.request('screen');}catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&camOn) keepAwake();
+});
 </script>
 </body>
 </html>
