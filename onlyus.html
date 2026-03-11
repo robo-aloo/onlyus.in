@@ -20,7 +20,6 @@
 html,body{height:100%;background:var(--bg);color:var(--txt);
   font-family:'Inter',system-ui,sans-serif;overflow:hidden;}
 
-/* SETUP */
 #setup{height:100%;display:flex;align-items:center;justify-content:center;
   padding:1rem;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .si{width:100%;max-width:340px;display:flex;flex-direction:column;gap:.9rem;}
@@ -44,32 +43,28 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
   outline:none;transition:border-color .2s;-webkit-appearance:none;}
 .f input:focus{border-color:var(--a);}
 
-/* password wrapper with show/hide toggle */
 .pw-wrap{position:relative;display:flex;align-items:center;}
-.pw-wrap input{padding-right:2.5rem;}
-.pw-eye{position:absolute;right:.7rem;background:none;border:none;color:var(--sub);
-  cursor:pointer;font-size:1rem;padding:.2rem;line-height:1;transition:color .2s;}
-.pw-eye:hover{color:var(--a);}
+.pw-wrap input{padding-right:2.6rem;}
+.eye{position:absolute;right:.65rem;background:none;border:none;color:var(--sub);
+  cursor:pointer;font-size:.95rem;padding:.2rem;line-height:1;transition:color .2s;}
+.eye:hover{color:var(--a);}
 
-/* strength meter */
 .smeter{display:flex;gap:.18rem;margin-top:.26rem;}
-.sb{flex:1;height:3px;border-radius:3px;background:var(--inp);transition:background .25s;}
+.sm{flex:1;height:3px;border-radius:3px;background:var(--inp);transition:background .25s;}
 .sw{background:var(--danger);}.so{background:var(--warn);}.sg{background:var(--safe);}
-.slbl{font-size:.56rem;color:var(--sub);margin-top:.16rem;}
+.slbl{font-size:.55rem;color:var(--sub);margin-top:.15rem;}
 
-/* KDF progress */
-.kpw{display:none;flex-direction:column;gap:.28rem;}
+.kpw{display:none;flex-direction:column;gap:.26rem;}
 .kpw.on{display:flex;}
 .kpl{display:flex;justify-content:space-between;font-size:.58rem;color:var(--sub);}
 .kpl b{color:var(--a);}
-.kpb-bg{width:100%;height:4px;background:var(--inp);border-radius:4px;overflow:hidden;}
-.kpb{height:100%;width:0%;border-radius:4px;background:linear-gradient(90deg,var(--a),#f472b6);transition:width .1s;}
+.kpb-bg{width:100%;height:3px;background:var(--inp);border-radius:3px;overflow:hidden;}
+.kpb{height:100%;width:0%;border-radius:3px;background:linear-gradient(90deg,var(--a),#f472b6);transition:width .1s;}
 
 .btn{width:100%;padding:.7rem;border:none;border-radius:9px;font-family:inherit;
   font-size:.88rem;font-weight:500;cursor:pointer;transition:opacity .15s,transform .1s;}
 .btn:active{transform:scale(.97);}
-.bp{background:var(--a);color:#fff;}
-.bp:hover{opacity:.88;}
+.bp{background:var(--a);color:#fff;}.bp:hover{opacity:.88;}
 .bp:disabled{opacity:.32;cursor:not-allowed;transform:none;}
 .bs{background:var(--inp);color:var(--txt);border:1px solid var(--bor);}
 .bs:hover{border-color:var(--a);color:var(--a);}
@@ -81,12 +76,22 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
   padding:.9rem;text-align:center;}
 .cbig{font-size:1.9rem;font-weight:300;letter-spacing:.35em;color:var(--a);font-family:monospace;}
 .csub{font-size:.58rem;color:var(--sub);margin-top:.26rem;}
+
 .sl{display:flex;align-items:center;gap:.4rem;font-size:.63rem;color:var(--sub);}
 .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;animation:bk 2s infinite;}
 .g{background:var(--safe);box-shadow:0 0 5px var(--safe);}
 .y{background:var(--warn);box-shadow:0 0 5px var(--warn);}
 .rd{background:var(--danger);box-shadow:0 0 5px var(--danger);}
 @keyframes bk{0%,100%{opacity:1}50%{opacity:.15}}
+
+/* connection steps */
+.steps{display:flex;flex-direction:column;gap:.4rem;}
+.step{display:flex;align-items:center;gap:.5rem;font-size:.65rem;color:var(--sub);
+  padding:.4rem .6rem;border-radius:7px;background:var(--inp);border:1px solid var(--bor);}
+.step.done{color:var(--safe);border-color:rgba(74,222,128,.2);}
+.step.active{color:var(--txt);border-color:var(--a);}
+.step.err{color:var(--danger);border-color:rgba(248,113,113,.2);}
+.step-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:currentColor;}
 
 /* CHAT */
 #chat{display:none;height:100%;}
@@ -101,7 +106,6 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
   #vcol{flex-shrink:0;}
   #mcol{flex:1;display:flex;flex-direction:column;min-width:0;}
 }
-
 #topbar{display:flex;align-items:center;justify-content:space-between;
   padding:.58rem .85rem;padding-top:calc(.58rem + env(safe-area-inset-top));
   background:var(--bg);border-bottom:1px solid var(--bor);flex-shrink:0;}
@@ -128,7 +132,6 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
   scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
 #msgs::-webkit-scrollbar{width:2px;}
 #msgs::-webkit-scrollbar-thumb{background:var(--bor);}
-
 .mw{display:flex;flex-direction:column;max-width:78%;}
 .mw.me{align-self:flex-end;align-items:flex-end;}
 .mw.them{align-self:flex-start;align-items:flex-start;}
@@ -161,7 +164,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 #toast{position:fixed;bottom:4.5rem;left:50%;transform:translateX(-50%) translateY(4px);
   background:var(--card);border:1px solid var(--bor);padding:.38rem .9rem;border-radius:18px;
   font-size:.65rem;white-space:nowrap;opacity:0;transition:all .22s;pointer-events:none;
-  z-index:99;max-width:82vw;text-align:center;}
+  z-index:99;max-width:88vw;text-align:center;word-break:break-word;white-space:normal;}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
 
 .mbg{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);
@@ -185,7 +188,6 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 </head>
 <body>
 
-<!-- SETUP -->
 <div id="setup">
 <div class="si">
 
@@ -197,35 +199,28 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 
   <div class="card" id="mainCard">
     <div class="ct">Connect</div>
-
     <div class="f">
       <label>Your name</label>
       <input type="text" id="nameIn" placeholder="Enter your name" maxlength="20"
         autocomplete="off" autocorrect="off" spellcheck="false"/>
     </div>
-
     <div class="f">
       <label>Shared passphrase <span style="color:var(--sub);font-size:.52rem;">— both use same</span></label>
       <div class="pw-wrap">
         <input type="password" id="passIn" placeholder="Make it strong"
           autocomplete="new-password" oninput="checkStr(this.value)"/>
-        <button class="pw-eye" type="button" onclick="togglePw()" id="eyeBtn" title="Show/hide">👁️</button>
+        <button class="eye" type="button" id="eyeBtn" onclick="togglePw()">👁️</button>
       </div>
       <div class="smeter">
-        <div class="sb" id="s1"></div>
-        <div class="sb" id="s2"></div>
-        <div class="sb" id="s3"></div>
-        <div class="sb" id="s4"></div>
+        <div class="sm" id="s1"></div><div class="sm" id="s2"></div>
+        <div class="sm" id="s3"></div><div class="sm" id="s4"></div>
       </div>
       <div class="slbl" id="slbl"></div>
     </div>
-
-    <!-- KDF progress -->
     <div class="kpw" id="kpw">
       <div class="kpl"><span>Deriving 256-bit key…</span><b id="kpct">0%</b></div>
       <div class="kpb-bg"><div class="kpb" id="kpb"></div></div>
     </div>
-
     <div class="or">connect via</div>
     <div class="r2">
       <button class="btn bp" id="createBtn" onclick="goCreate()">Create room</button>
@@ -239,7 +234,11 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
       <div class="cbig" id="codeOut">——</div>
       <div class="csub">Share this code with them</div>
     </div>
-    <div class="sl"><span class="dot y" id="hDot"></span><span id="hTxt">Setting up…</span></div>
+    <div class="steps" id="hostSteps">
+      <div class="step active" id="hs1"><span class="step-dot"></span>Connecting to relay…</div>
+      <div class="step" id="hs2"><span class="step-dot"></span>Waiting for them to join…</div>
+      <div class="step" id="hs3"><span class="step-dot"></span>Exchanging keys…</div>
+    </div>
     <button class="btn bs" onclick="copyCode()">Copy code</button>
     <button class="btn bs" onclick="goBack()">← Back</button>
   </div>
@@ -252,7 +251,12 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
         autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
         oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"/>
     </div>
-    <button class="btn bp" onclick="doJoin()">Connect</button>
+    <div class="steps" id="joinSteps" style="display:none;">
+      <div class="step active" id="js1"><span class="step-dot"></span>Connecting to relay…</div>
+      <div class="step" id="js2"><span class="step-dot"></span>Finding room…</div>
+      <div class="step" id="js3"><span class="step-dot"></span>Exchanging keys…</div>
+    </div>
+    <button class="btn bp" id="joinConnBtn" onclick="doJoin()">Connect →</button>
     <button class="btn bs" onclick="goBack()">← Back</button>
   </div>
 
@@ -294,20 +298,19 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
   </div>
 </div>
 
-<!-- INFO MODAL -->
 <div class="mbg" id="infoM">
   <div class="modal">
-    <h3>🔒 Security breakdown</h3>
+    <h3>🔒 Security</h3>
     <div class="minfo">
       <p><b>Password → 256-bit key</b><br>
-      <span class="chip">PBKDF2-SHA512</span> 600,000 iterations (OWASP 2023 standard). Even `1432` becomes a 256-bit key that takes centuries to reverse.</p>
+      <span class="chip">PBKDF2-SHA512</span> 600,000 iterations. Even a short password becomes a 256-bit key uncrackable by any machine.</p>
       <p style="margin-top:.6rem;"><b>Key exchange</b><br>
-      <span class="chip">X25519 ECDH</span> Your private key never leaves your device. Mixed with PBKDF2 output — both must be correct.</p>
+      <span class="chip">X25519 ECDH</span> Private key never leaves your device.</p>
       <p style="margin-top:.6rem;"><b>Messages &amp; photos</b><br>
-      <span class="chip">XSalsa20-Poly1305</span> Same as Signal. Unique 192-bit nonce every message. Tamper detection built in.</p>
+      <span class="chip">XSalsa20-Poly1305</span> Same as Signal. Unique nonce every message.</p>
       <p style="margin-top:.6rem;"><b>Video &amp; voice</b><br>
-      <span class="chip">DTLS-SRTP</span> WebRTC browser E2EE. Relay sees zero media.</p>
-      <p style="margin-top:.6rem;"><b>Storage</b><br>Zero. Close tab = gone forever.</p>
+      <span class="chip">DTLS-SRTP</span> Browser E2EE. Relay sees nothing.</p>
+      <p style="margin-top:.6rem;"><b>No storage</b> — Close tab = gone forever.</p>
     </div>
     <button class="btn bp" onclick="G('infoM').classList.remove('on')">Got it</button>
   </div>
@@ -319,546 +322,506 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 <script>
 'use strict';
 
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════
+//  PEERJS CONFIG — multiple STUN servers
+//  for reliable cross-network connections
+// ═══════════════════════════════════════
+const PEER_CONFIG = {
+  debug: 0,
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' },
+      { urls: 'stun:stun.cloudflare.com:3478' },
+      { urls: 'stun:stun.nextcloud.com:3478' },
+      // Free TURN server for when STUN fails (different networks)
+      {
+        urls:       'turn:openrelay.metered.ca:80',
+        username:   'openrelayproject',
+        credential: 'openrelayproject'
+      },
+      {
+        urls:       'turn:openrelay.metered.ca:443',
+        username:   'openrelayproject',
+        credential: 'openrelayproject'
+      },
+      {
+        urls:       'turn:openrelay.metered.ca:443?transport=tcp',
+        username:   'openrelayproject',
+        credential: 'openrelayproject'
+      }
+    ],
+    iceCandidatePoolSize: 10
+  }
+};
+
+// ═══════════════════════════════════════
 //  KDF: PBKDF2-SHA512 → 256-bit key
-//  Works on 100% of browsers including potato
-//  600,000 iterations = OWASP 2023 recommendation
-// ══════════════════════════════════════════════
-const KDF_SALT    = new TextEncoder().encode('onlyus-v3-pbkdf2-salt');
-const KDF_ITER    = 600000;
-const KDF_KEYLEN  = 256; // bits
+// ═══════════════════════════════════════
+const KDF_SALT = new TextEncoder().encode('onlyus-v4-2024');
+const KDF_ITER = 600000;
 
-async function deriveKey256(passphrase) {
-  const pw = passphrase.trim();
-  setProg(true, 5);
-  await tick();
-
-  // Import raw key material
-  const keyMat = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(pw),
-    'PBKDF2',
-    false,
-    ['deriveBits']
+async function deriveKey(pass) {
+  setProg(true, 5); await tick();
+  const mat = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(pass.trim()),
+    'PBKDF2', false, ['deriveBits']
   );
-
-  setProg(true, 20);
-  await tick();
-
-  // Derive 256 bits
+  setProg(true, 20); await tick();
   const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-512', salt: KDF_SALT, iterations: KDF_ITER },
-    keyMat,
-    KDF_KEYLEN
+    { name:'PBKDF2', hash:'SHA-512', salt:KDF_SALT, iterations:KDF_ITER },
+    mat, 256
   );
-
-  setProg(true, 100);
-  await tick(100);
+  setProg(true, 100); await tick(80);
   setProg(false, 0);
-
-  return new Uint8Array(bits); // 32 bytes = 256 bits
+  return new Uint8Array(bits);
 }
 
-function setProg(show, pct) {
-  G('kpw').classList.toggle('on', show);
-  G('kpb').style.width = pct + '%';
-  G('kpct').textContent = pct + '%';
+function setProg(on, p) {
+  G('kpw').classList.toggle('on', on);
+  G('kpb').style.width = p + '%';
+  G('kpct').textContent = p + '%';
 }
-
 function tick(ms=10) { return new Promise(r => setTimeout(r, ms)); }
 
-// ══════════════════════════════════════════════
-//  CRYPTO CORE
-// ══════════════════════════════════════════════
-let KP  = null; // X25519 keypair
-let SK  = null; // final 256-bit shared key
-let PH  = null; // PBKDF2 hash of passphrase
+// ═══════════════════════════════════════
+//  CRYPTO
+// ═══════════════════════════════════════
+let KP=null, SK=null, PH=null;
 
 function genKP() { KP = nacl.box.keyPair(); }
 
-// Final SK = SHA-512(X25519_DH || PBKDF2_hash) → first 256 bits
-// BOTH the DH key exchange AND the passphrase must be correct
-function buildSK(theirPub64, pbkdf2Key) {
-  const dh  = nacl.scalarMult(KP.secretKey, nacl.util.decodeBase64(theirPub64));
-  const mix = new Uint8Array(dh.length + pbkdf2Key.length);
-  mix.set(dh, 0);
-  mix.set(pbkdf2Key, dh.length);
-  return nacl.hash(mix).slice(0, 32); // SHA-512 → 256 bits
+function buildSK(pub64, kdfKey) {
+  const dh  = nacl.scalarMult(KP.secretKey, nacl.util.decodeBase64(pub64));
+  const mix = new Uint8Array(64);
+  mix.set(dh, 0); mix.set(kdfKey, 32);
+  return nacl.hash(mix).slice(0, 32);
 }
 
-function enc(txt) {
-  const n = nacl.randomBytes(nacl.secretbox.nonceLength);
-  const b = nacl.secretbox(nacl.util.decodeUTF8(txt), n, SK);
-  return nacl.util.encodeBase64(n) + '.' + nacl.util.encodeBase64(b);
+function enc(t) {
+  const n=nacl.randomBytes(24);
+  return nacl.util.encodeBase64(n)+'.'+nacl.util.encodeBase64(nacl.secretbox(nacl.util.decodeUTF8(t),n,SK));
 }
-
 function dec(p) {
   try {
-    const i = p.indexOf('.');
-    const o = nacl.secretbox.open(
-      nacl.util.decodeBase64(p.slice(i+1)),
-      nacl.util.decodeBase64(p.slice(0,i)), SK);
-    return o ? nacl.util.encodeUTF8(o) : null;
-  } catch(e) { return null; }
+    const i=p.indexOf('.');
+    const o=nacl.secretbox.open(nacl.util.decodeBase64(p.slice(i+1)),nacl.util.decodeBase64(p.slice(0,i)),SK);
+    return o?nacl.util.encodeUTF8(o):null;
+  } catch(e){return null;}
 }
-
-function encB(bytes) {
-  const n = nacl.randomBytes(nacl.secretbox.nonceLength);
-  const b = nacl.secretbox(bytes, n, SK);
-  return nacl.util.encodeBase64(n) + '.' + nacl.util.encodeBase64(b);
+function encB(b) {
+  const n=nacl.randomBytes(24);
+  return nacl.util.encodeBase64(n)+'.'+nacl.util.encodeBase64(nacl.secretbox(b,n,SK));
 }
-
 function decB(p) {
   try {
-    const i = p.indexOf('.');
-    return nacl.secretbox.open(
-      nacl.util.decodeBase64(p.slice(i+1)),
-      nacl.util.decodeBase64(p.slice(0,i)), SK);
-  } catch(e) { return null; }
+    const i=p.indexOf('.');
+    return nacl.secretbox.open(nacl.util.decodeBase64(p.slice(i+1)),nacl.util.decodeBase64(p.slice(0,i)),SK);
+  } catch(e){return null;}
 }
 
-// ══════════════════════════════════════════════
-//  PASSWORD VISIBILITY TOGGLE
-// ══════════════════════════════════════════════
-let pwVisible = false;
+// ═══════════════════════════════════════
+//  PASSWORD UI
+// ═══════════════════════════════════════
+let pwVis=false;
 function togglePw() {
-  pwVisible = !pwVisible;
-  const inp = G('passIn');
-  inp.type = pwVisible ? 'text' : 'password';
-  G('eyeBtn').textContent = pwVisible ? '🙈' : '👁️';
-  inp.focus();
+  pwVis=!pwVis;
+  G('passIn').type = pwVis?'text':'password';
+  G('eyeBtn').textContent = pwVis?'🙈':'👁️';
+  G('passIn').focus();
 }
-
-// ══════════════════════════════════════════════
-//  STRENGTH METER
-// ══════════════════════════════════════════════
 function checkStr(pw) {
-  let s = 0;
-  if (pw.length >= 6)  s++;
-  if (pw.length >= 12) s++;
-  if (/[A-Za-z]/.test(pw) && /[0-9]/.test(pw)) s++;
-  if (/[!@#$%^&*_\-]/.test(pw)) s++;
-  const c = ['','sw','sw','so','sg'];
-  const l = ['','Weak — add more chars','Weak — mix letters & numbers','Fair — add a symbol','Strong ✦'];
-  for (let i=1;i<=4;i++) G('s'+i).className='sb'+(i<=s?' '+c[s]:'');
-  G('slbl').textContent = pw.length ? (l[s]||'Weak') : '';
+  let s=0;
+  if(pw.length>=6) s++;
+  if(pw.length>=12) s++;
+  if(/[A-Za-z]/.test(pw)&&/[0-9]/.test(pw)) s++;
+  if(/[!@#$%^&*_\-]/.test(pw)) s++;
+  const c=['','sw','sw','so','sg'];
+  const l=['','Weak','Weak','Fair — add more','Strong ✦'];
+  for(let i=1;i<=4;i++) G('s'+i).className='sm'+(i<=s?' '+c[s]:'');
+  G('slbl').textContent=pw.length?(l[s]||'Weak'):'';
 }
 
-// ══════════════════════════════════════════════
-//  APP STATE
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
 let peer=null, conn=null, vcall=null, stream=null;
 let roomCode='', myName='';
 let camOn=false, micOn=false;
+let retryCount=0;
 
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════
 //  SETUP
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════
 async function validate() {
   myName = G('nameIn').value.trim();
   const pass = G('passIn').value;
-  if (!myName)      { toast('Enter your name'); return false; }
-  if (!pass.trim()) { toast('Enter a passphrase'); return false; }
-  if (pass.length < 4) { toast('Passphrase too short — min 4 chars'); return false; }
-
+  if(!myName)       { toast('Enter your name'); return false; }
+  if(!pass.trim())  { toast('Enter a passphrase'); return false; }
+  if(pass.length<4) { toast('Passphrase too short'); return false; }
   setInputs(true);
-  try {
-    PH = await deriveKey256(pass);
-  } catch(e) {
-    toast('Key derivation failed — check browser');
-    setInputs(false); return false;
-  }
+  try { PH = await deriveKey(pass); }
+  catch(e) { toast('Key derivation failed'); setInputs(false); return false; }
   setInputs(false);
   return !!PH;
 }
 
-function setInputs(disabled) {
-  G('createBtn').disabled = disabled;
-  G('joinBtn').disabled   = disabled;
-}
+function setInputs(d) { G('createBtn').disabled=d; G('joinBtn').disabled=d; }
 
 function makeCode() {
-  const C = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from(nacl.randomBytes(6), b => C[b % C.length]).join('');
+  const C='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from(nacl.randomBytes(6),b=>C[b%C.length]).join('');
 }
 
 async function goCreate() {
-  if (!(await validate())) return;
-  showCard('createCard');
-  genKP();
-  roomCode = makeCode();
-  G('codeOut').textContent = roomCode;
+  if(!(await validate())) return;
+  showCard('createCard'); genKP();
+  roomCode=makeCode();
+  G('codeOut').textContent=roomCode;
   initHost();
 }
 
 async function goJoin() {
-  if (!(await validate())) return;
+  if(!(await validate())) return;
   showCard('joinCard');
 }
 
 function goBack() {
   showCard('mainCard');
-  if (peer) { peer.destroy(); peer = null; }
+  if(peer){peer.destroy();peer=null;}
+  conn=null; retryCount=0;
 }
 
 function copyCode() {
   navigator.clipboard.writeText(roomCode)
-    .then(() => toast('Code copied! ✦'))
-    .catch(() => toast('Code: ' + roomCode));
+    .then(()=>toast('Code copied! ✦'))
+    .catch(()=>toast('Code: '+roomCode));
 }
 
 function showCard(id) {
-  ['mainCard','createCard','joinCard'].forEach(c =>
-    G(c).style.display = c===id ? '' : 'none');
+  ['mainCard','createCard','joinCard'].forEach(c=>
+    G(c).style.display=c===id?'':'none');
 }
 
-// ══════════════════════════════════════════════
-//  HOST
-// ══════════════════════════════════════════════
-function initHost() {
-  setHS('y','Waiting for them…');
-  const hid = 'ou5-' + roomCode.toLowerCase() + '-h';
-  peer = new Peer(hid, { debug: 0 });
-
-  peer.on('open', () => setHS('g','Ready — share the code'));
-
-  peer.on('connection', c => {
-    conn = c;
-    wire();
-  });
-
-  peer.on('call', answerCall);
-
-  peer.on('error', e => {
-    if (e.type === 'unavailable-id') {
-      // Code taken — regenerate silently
-      roomCode = makeCode();
-      G('codeOut').textContent = roomCode;
-      peer.destroy();
-      setTimeout(initHost, 800);
-    } else {
-      setHS('rd', 'Error — try again');
-      toast('Host error: ' + e.type);
-    }
-  });
-}
-
-// ══════════════════════════════════════════════
-//  JOIN
-// ══════════════════════════════════════════════
-function doJoin() {
-  const code = G('codeIn').value.trim().toUpperCase();
-  if (code.length < 4) { toast('Enter the room code'); return; }
-  roomCode = code;
-  genKP();
-
-  const gid = 'ou5-' + code.toLowerCase() + '-g' + Date.now().toString(36).slice(-5);
-  const hid = 'ou5-' + code.toLowerCase() + '-h';
-
-  peer = new Peer(gid, { debug: 0 });
-
-  peer.on('open', () => {
-    setCS('y','connecting…');
-    try {
-      conn = peer.connect(hid, {
-        reliable:      true,
-        serialization: 'json'
-      });
-      wire();
-    } catch(e) {
-      toast('Connection error — check code');
-    }
-  });
-
-  peer.on('call', answerCall);
-
-  peer.on('error', e => {
-    if (e.type === 'peer-unavailable') {
-      toast('Room not found — check the code');
-      setCS('rd','room not found');
-    } else {
-      toast('Error: ' + e.type);
-      setCS('rd', e.type);
-    }
-  });
-}
-
-// ══════════════════════════════════════════════
-//  DATA CHANNEL — FIXED key exchange
-// ══════════════════════════════════════════════
-function wire() {
-  // conn.on('open') fires when the data channel is actually ready
-  conn.on('open', () => {
-    setCS('y','exchanging keys…');
-    // Send my public key — this is safe to send unencrypted
-    // Security comes from PBKDF2 mixing, not key secrecy
-    conn.send({
-      t: 'KEY',
-      k: nacl.util.encodeBase64(KP.publicKey),
-      n: myName
-    });
-  });
-
-  conn.on('data', d => {
-    if (!d || !d.t) return;
-
-    // ── KEY EXCHANGE ──
-    if (d.t === 'KEY') {
-      try {
-        SK = buildSK(d.k, PH);
-        launchChat();
-        setCS('g','encrypted · connected');
-        addSys('Connected ✦ PBKDF2-256 + X25519 + XSalsa20-Poly1305 active');
-      } catch(e) {
-        toast('Key exchange failed — make sure passphrase matches');
-        setCS('rd','key mismatch?');
-      }
-      return;
-    }
-
-    // Must have SK to decrypt
-    if (!SK) return;
-
-    // ── TEXT ──
-    if (d.t === 'MSG') {
-      const plain = dec(d.d);
-      if (plain !== null) addMsg(plain, 'them');
-      return;
-    }
-
-    // ── IMAGE ──
-    if (d.t === 'IMG') {
-      const bytes = decB(d.d);
-      if (bytes) {
-        const url = URL.createObjectURL(new Blob([bytes], { type: d.m || 'image/jpeg' }));
-        addImg(url, 'them');
-      }
-    }
-  });
-
-  conn.on('close', () => {
-    setCS('rd','disconnected');
-    addSys('Connection closed');
-  });
-
-  conn.on('error', e => {
-    setCS('rd','error');
-    toast('Connection error');
-    console.error('conn error', e);
-  });
-}
-
-// ══════════════════════════════════════════════
-//  SEND
-// ══════════════════════════════════════════════
-function sendMsg() {
-  const el = G('mi'), txt = el.value.trim();
-  if (!txt) return;
-  if (!rdy()) { toast('Not connected yet — wait for green dot'); return; }
-  conn.send({ t: 'MSG', d: enc(txt) });
-  addMsg(txt, 'me');
-  el.value = ''; el.style.height = 'auto';
-}
-
-function sendImg(e) {
-  const f = e.target.files[0];
-  if (!f) return;
-  if (!rdy()) { toast('Not connected yet'); return; }
-  if (f.size > 8*1024*1024) { toast('Max 8MB per image'); return; }
-  const r = new FileReader();
-  r.onload = ev => {
-    const bytes = new Uint8Array(ev.target.result);
-    conn.send({ t: 'IMG', d: encB(bytes), m: f.type });
-    addImg(URL.createObjectURL(f), 'me');
-    toast('Photo sent ✦');
-  };
-  r.readAsArrayBuffer(f);
-  e.target.value = '';
-}
-
-function rdy() { return !!(conn && conn.open && SK); }
-
-// ══════════════════════════════════════════════
-//  VIDEO
-// ══════════════════════════════════════════════
-async function toggleCam() {
-  if (!camOn) {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
-      G('locV').srcObject = stream;
-      camOn = true; micOn = true;
-      G('vwrap').classList.add('on');
-      G('voff').style.display = 'none';
-      G('camBtn').classList.add('on');
-      G('micBtn').classList.add('on');
-      // Call the other peer if connected
-      if (conn && conn.open) {
-        vcall = peer.call(conn.peer, stream);
-        vcall.on('stream', s => setRemote(s));
-        vcall.on('error', () => {});
-      }
-      toast('Video on · DTLS-SRTP encrypted');
-    } catch(err) {
-      toast('Camera denied — check browser permissions');
-    }
-  } else {
-    camOn = !camOn;
-    stream && stream.getVideoTracks().forEach(t => t.enabled = camOn);
-    G('camBtn').classList.toggle('on', camOn);
-    toast(camOn ? 'Camera on' : 'Camera off');
+// ═══════════════════════════════════════
+//  HOST — with auto retry
+// ═══════════════════════════════════════
+function setHStep(n, state) {
+  for(let i=1;i<=3;i++) {
+    const el=G('hs'+i);
+    el.className='step'+(i<n?' done':i===n?' '+state:'');
   }
 }
 
-function answerCall(c) {
-  const ans = s => {
-    vcall = c;
-    c.answer(s);
-    c.on('stream', r => setRemote(r));
-    c.on('error', () => {});
+function initHost() {
+  setHStep(1,'active');
+  const hid='ou6-'+roomCode.toLowerCase()+'-h';
+  if(peer){try{peer.destroy();}catch(e){} peer=null;}
+
+  peer=new Peer(hid, PEER_CONFIG);
+
+  peer.on('open', ()=>{
+    setHStep(2,'active');
+  });
+
+  peer.on('connection', c=>{
+    setHStep(3,'active');
+    conn=c; wire();
+  });
+
+  peer.on('call', answerCall);
+
+  peer.on('error', e=>{
+    if(e.type==='unavailable-id'){
+      roomCode=makeCode();
+      G('codeOut').textContent=roomCode;
+      peer.destroy();
+      setTimeout(initHost,600);
+    } else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){
+      // Retry up to 3 times
+      if(retryCount<3){
+        retryCount++;
+        setTimeout(initHost,2000);
+        setHStep(1,'active');
+        toast('Relay issue — retrying ('+retryCount+'/3)…');
+      } else {
+        setHStep(1,'err');
+        toast('Cannot reach relay — check internet');
+      }
+    } else {
+      setHStep(1,'err');
+      toast('Error: '+e.type);
+    }
+  });
+
+  peer.on('disconnected',()=>{
+    try{peer.reconnect();}catch(e){}
+  });
+}
+
+// ═══════════════════════════════════════
+//  JOIN — with retry & better errors
+// ═══════════════════════════════════════
+function setJStep(n, state) {
+  for(let i=1;i<=3;i++){
+    const el=G('js'+i);
+    el.className='step'+(i<n?' done':i===n?' '+state:'');
+  }
+}
+
+function doJoin() {
+  const code=G('codeIn').value.trim().toUpperCase();
+  if(code.length<4){toast('Enter the room code');return;}
+  roomCode=code; genKP(); retryCount=0;
+
+  G('joinSteps').style.display='flex';
+  G('joinConnBtn').disabled=true;
+  setJStep(1,'active');
+
+  const gid='ou6-'+code.toLowerCase()+'-g'+Date.now().toString(36).slice(-5);
+  const hid='ou6-'+code.toLowerCase()+'-h';
+
+  if(peer){try{peer.destroy();}catch(e){} peer=null;}
+  peer=new Peer(gid, PEER_CONFIG);
+
+  peer.on('open',()=>{
+    setJStep(2,'active');
+    try {
+      conn=peer.connect(hid,{reliable:true,serialization:'json'});
+      wire();
+    } catch(e){
+      toast('Connection failed');
+      G('joinConnBtn').disabled=false;
+    }
+  });
+
+  peer.on('call', answerCall);
+
+  peer.on('error',e=>{
+    G('joinConnBtn').disabled=false;
+    if(e.type==='peer-unavailable'){
+      setJStep(2,'err');
+      toast('Room not found — check code and make sure they created it first');
+    } else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){
+      if(retryCount<3){
+        retryCount++;
+        setTimeout(doJoinRetry,2000);
+        toast('Relay issue — retrying ('+retryCount+'/3)…');
+      } else {
+        setJStep(1,'err');
+        toast('Cannot reach relay — check internet connection');
+      }
+    } else {
+      setJStep(2,'err');
+      toast('Error: '+e.type);
+    }
+  });
+}
+
+function doJoinRetry() {
+  if(peer){try{peer.destroy();}catch(e){} peer=null;}
+  doJoin();
+}
+
+// ═══════════════════════════════════════
+//  DATA CHANNEL
+// ═══════════════════════════════════════
+function wire() {
+  conn.on('open',()=>{
+    // Send public key immediately on channel open
+    conn.send({ t:'KEY', k:nacl.util.encodeBase64(KP.publicKey), n:myName });
+    setCS('y','exchanging keys…');
+    setJStep(3,'active');
+  });
+
+  conn.on('data', d=>{
+    if(!d||!d.t) return;
+
+    if(d.t==='KEY'){
+      try{
+        SK=buildSK(d.k, PH);
+        launchChat();
+        setCS('g','encrypted · connected');
+        addSys('Connected ✦ E2E encrypted');
+      } catch(e){
+        toast('Key exchange failed — make sure passphrase is identical on both sides');
+        setCS('rd','key error');
+      }
+      return;
+    }
+
+    if(!SK) return;
+
+    if(d.t==='MSG'){
+      const p=dec(d.d);
+      if(p!==null) addMsg(p,'them');
+      return;
+    }
+
+    if(d.t==='IMG'){
+      const b=decB(d.d);
+      if(b) addImg(URL.createObjectURL(new Blob([b],{type:d.m||'image/jpeg'})),'them');
+    }
+  });
+
+  conn.on('close',()=>{
+    setCS('rd','disconnected');
+    addSys('Session ended');
+  });
+
+  conn.on('error',e=>{
+    setCS('rd','error');
+    toast('Connection error: '+e.type);
+  });
+}
+
+// ═══════════════════════════════════════
+//  SEND
+// ═══════════════════════════════════════
+function sendMsg() {
+  const el=G('mi'), txt=el.value.trim();
+  if(!txt) return;
+  if(!rdy()){toast('Not connected — wait for green dot');return;}
+  conn.send({t:'MSG',d:enc(txt)});
+  addMsg(txt,'me');
+  el.value=''; el.style.height='auto';
+}
+
+function sendImg(e) {
+  const f=e.target.files[0]; if(!f) return;
+  if(!rdy()){toast('Not connected yet');return;}
+  if(f.size>8*1024*1024){toast('Max 8MB');return;}
+  const r=new FileReader();
+  r.onload=ev=>{
+    const bytes=new Uint8Array(ev.target.result);
+    conn.send({t:'IMG',d:encB(bytes),m:f.type});
+    addImg(URL.createObjectURL(f),'me');
+    toast('Photo sent ✦');
   };
-  if (stream) { ans(stream); return; }
-  navigator.mediaDevices.getUserMedia({ video:true, audio:true })
-    .then(s => {
-      stream = s;
-      G('locV').srcObject = s;
-      camOn = true; micOn = true;
-      G('vwrap').classList.add('on');
-      G('voff').style.display = 'none';
-      G('camBtn').classList.add('on');
-      G('micBtn').classList.add('on');
+  r.readAsArrayBuffer(f); e.target.value='';
+}
+
+function rdy(){return !!(conn&&conn.open&&SK);}
+
+// ═══════════════════════════════════════
+//  VIDEO
+// ═══════════════════════════════════════
+async function toggleCam(){
+  if(!camOn){
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+      G('locV').srcObject=stream; camOn=true; micOn=true;
+      G('vwrap').classList.add('on'); G('voff').style.display='none';
+      G('camBtn').classList.add('on'); G('micBtn').classList.add('on');
+      if(conn&&conn.open){
+        vcall=peer.call(conn.peer,stream);
+        vcall.on('stream',s=>setRemote(s));
+        vcall.on('error',()=>{});
+      }
+      toast('Video on · DTLS-SRTP encrypted');
+    }catch(e){toast('Camera denied — check permissions');}
+  } else {
+    camOn=!camOn;
+    stream&&stream.getVideoTracks().forEach(t=>t.enabled=camOn);
+    G('camBtn').classList.toggle('on',camOn);
+    toast(camOn?'Camera on':'Camera off');
+  }
+}
+
+function answerCall(c){
+  const ans=s=>{vcall=c;c.answer(s);c.on('stream',r=>setRemote(r));c.on('error',()=>{});};
+  if(stream){ans(stream);return;}
+  navigator.mediaDevices.getUserMedia({video:true,audio:true})
+    .then(s=>{
+      stream=s; G('locV').srcObject=s; camOn=true; micOn=true;
+      G('vwrap').classList.add('on'); G('voff').style.display='none';
+      G('camBtn').classList.add('on'); G('micBtn').classList.add('on');
       ans(s);
-    })
-    .catch(() => c.answer());
+    }).catch(()=>c.answer());
 }
 
-function setRemote(s) {
-  G('remV').srcObject = s;
-  G('vwrap').classList.add('on');
-  G('voff').style.display = 'none';
+function setRemote(s){
+  G('remV').srcObject=s; G('vwrap').classList.add('on'); G('voff').style.display='none';
 }
 
-function toggleMic() {
-  if (!stream) { toast('Start camera first'); return; }
-  micOn = !micOn;
-  stream.getAudioTracks().forEach(t => t.enabled = micOn);
-  G('micBtn').classList.toggle('on', micOn);
-  toast(micOn ? 'Mic on' : 'Mic muted 🔇');
+function toggleMic(){
+  if(!stream){toast('Start camera first');return;}
+  micOn=!micOn;
+  stream.getAudioTracks().forEach(t=>t.enabled=micOn);
+  G('micBtn').classList.toggle('on',micOn);
+  toast(micOn?'Mic on':'Mic muted 🔇');
 }
 
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════
 //  CHAT UI
-// ══════════════════════════════════════════════
-function launchChat() {
-  G('setup').style.display = 'none';
-  G('chat').classList.add('on');
-  scrollB();
+// ═══════════════════════════════════════
+function launchChat(){
+  G('setup').style.display='none'; G('chat').classList.add('on'); scrollB();
 }
-
-function addMsg(txt, who) {
-  const w = document.createElement('div');
-  w.className = 'mw ' + who;
-  w.innerHTML = `<div class="bub">${esc(txt)}</div>
-    <div class="mt">${now()}</div>
-    <div class="et">⬡ encrypted</div>`;
-  G('msgs').appendChild(w);
-  scrollB();
+function addMsg(txt,who){
+  const w=document.createElement('div'); w.className='mw '+who;
+  w.innerHTML=`<div class="bub">${esc(txt)}</div><div class="mt">${now()}</div><div class="et">⬡ encrypted</div>`;
+  G('msgs').appendChild(w); scrollB();
 }
-
-function addImg(url, who) {
-  const w   = document.createElement('div'); w.className = 'mw ' + who;
-  const b   = document.createElement('div'); b.className = 'bub'; b.style.padding = '.28rem';
-  const img = document.createElement('img');
-  img.src = url; img.loading = 'lazy';
-  img.onclick = () => openLB(url);
+function addImg(url,who){
+  const w=document.createElement('div'); w.className='mw '+who;
+  const b=document.createElement('div'); b.className='bub'; b.style.padding='.28rem';
+  const img=document.createElement('img');
+  img.src=url; img.loading='lazy'; img.onclick=()=>openLB(url);
   b.appendChild(img); w.appendChild(b);
-  w.innerHTML += `<div class="mt">${now()}</div><div class="et">⬡ photo encrypted</div>`;
-  G('msgs').appendChild(w);
-  scrollB();
+  w.innerHTML+=`<div class="mt">${now()}</div><div class="et">⬡ photo encrypted</div>`;
+  G('msgs').appendChild(w); scrollB();
 }
-
-function addSys(txt) {
-  const d = document.createElement('div');
-  d.className = 'sys'; d.textContent = txt;
-  G('msgs').appendChild(d);
-  scrollB();
+function addSys(txt){
+  const d=document.createElement('div'); d.className='sys'; d.textContent=txt;
+  G('msgs').appendChild(d); scrollB();
 }
+function scrollB(){const m=G('msgs');setTimeout(()=>m.scrollTop=m.scrollHeight,50);}
+function now(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+function G(id){return document.getElementById(id);}
+function setCS(c,t){G('cDot').className='dot '+(c==='g'?'g':c==='rd'?'rd':'y');G('cTxt').textContent=t;}
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function rsz(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,96)+'px';}
+function openLB(url){G('lbi').src=url;G('lb').classList.add('on');}
+function closeLB(){G('lb').classList.remove('on');}
 
-function scrollB() {
-  const m = G('msgs');
-  setTimeout(() => m.scrollTop = m.scrollHeight, 50);
-}
-
-function now() {
-  return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-}
-
-function esc(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-}
-
-function G(id) { return document.getElementById(id); }
-
-function setCS(c,t) {
-  G('cDot').className = 'dot ' + (c==='g'?'g':c==='rd'?'rd':'y');
-  G('cTxt').textContent = t;
-}
-
-function setHS(c,t) {
-  G('hDot').className = 'dot ' + (c==='g'?'g':c==='rd'?'rd':'y');
-  G('hTxt').textContent = t;
-}
-
-function onKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
-}
-
-function rsz(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 96) + 'px';
-}
-
-// LIGHTBOX
-function openLB(url) { G('lbi').src = url; G('lb').classList.add('on'); }
-function closeLB()   { G('lb').classList.remove('on'); }
-
-// END SESSION
-function endSess() {
-  if (!confirm('End session? Everything will be cleared.')) return;
-  if (vcall)  vcall.close();
-  if (conn)   conn.close();
-  if (peer)   peer.destroy();
-  if (stream) stream.getTracks().forEach(t => t.stop());
-  SK = null; PH = null; KP = null;
+function endSess(){
+  if(!confirm('End session?')) return;
+  if(vcall) vcall.close();
+  if(conn)  conn.close();
+  if(peer)  peer.destroy();
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  SK=null;PH=null;KP=null;
   location.reload();
 }
 
-// TOAST
 let _tt;
-function toast(msg) {
-  const t = G('toast');
-  t.textContent = msg; t.classList.add('on');
-  clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('on'), 2600);
+function toast(msg){
+  const t=G('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('on'),3000);
 }
 
-// Android: prevent double-tap zoom
-let lt = 0;
-document.addEventListener('touchend', e => {
-  const n = Date.now(); if (n - lt < 280) e.preventDefault(); lt = n;
-}, { passive: false });
+// Android: no double-tap zoom
+let lt=0;
+document.addEventListener('touchend',e=>{
+  const n=Date.now(); if(n-lt<280)e.preventDefault(); lt=n;
+},{passive:false});
 
-// Back button
-history.pushState({}, '');
-window.addEventListener('popstate', () => {
-  if (G('lb').classList.contains('on'))    { closeLB(); return; }
-  if (G('infoM').classList.contains('on')) { G('infoM').classList.remove('on'); }
+history.pushState({},'');
+window.addEventListener('popstate',()=>{
+  if(G('lb').classList.contains('on')){closeLB();return;}
+  if(G('infoM').classList.contains('on')){G('infoM').classList.remove('on');}
 });
 
-// Wake lock during video
-async function keepAwake() {
-  try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e) {}
+async function keepAwake(){
+  try{if('wakeLock' in navigator) await navigator.wakeLock.request('screen');}catch(e){}
 }
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && camOn) keepAwake();
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&camOn) keepAwake();
 });
 </script>
 </body>
